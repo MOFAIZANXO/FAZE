@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 import '../contracts/widget_contracts.dart';
 
 /// Journal Widget for Dashboard
 /// 
 /// Shows streak counter with fire animation and daily progress dots.
-/// Features a purple gradient background.
+/// Features the theme's primary blue accent.
 class DashboardJournalWidgetCard extends StatefulWidget {
   final DashboardJournalWidget data;
 
@@ -46,8 +47,6 @@ class _DashboardJournalWidgetCardState extends State<DashboardJournalWidgetCard>
 
   @override
   Widget build(BuildContext context) {
-    const accentColor = Color(0xFF9C27B0);
-    
     return GestureDetector(
       onTap: () {
         Feedback.forTap(context);
@@ -58,32 +57,21 @@ class _DashboardJournalWidgetCardState extends State<DashboardJournalWidgetCard>
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF7B1FA2), Color(0xFF4A148C)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: AppColors.cardBackground,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF4A148C).withOpacity(0.4),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          border: Border.all(color: AppColors.border, width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.book, color: Colors.white, size: 20),
+                const Icon(Icons.book, color: AppColors.primaryBlue, size: 20),
                 const SizedBox(width: 8),
-                const Text(
+                Text(
                   'Journal',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -94,18 +82,18 @@ class _DashboardJournalWidgetCardState extends State<DashboardJournalWidgetCard>
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.orange.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
                         children: [
-                          const Text('🔥', style: TextStyle(fontSize: 14)),
+                          const Text('🔥', style: TextStyle(fontSize: 12)),
                           const SizedBox(width: 4),
                           Text(
                             '${widget.data.currentStreak} Day Streak',
                             style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
+                              color: Colors.orange,
+                              fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -115,12 +103,11 @@ class _DashboardJournalWidgetCardState extends State<DashboardJournalWidgetCard>
                   ),
               ],
             ),
-            const SizedBox(height: 20),
-            const Text(
+            const SizedBox(height: 16),
+            Text(
               'Today\'s Progress',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 12),
@@ -132,17 +119,17 @@ class _DashboardJournalWidgetCardState extends State<DashboardJournalWidgetCard>
                   height: 32,
                   margin: const EdgeInsets.only(right: 12),
                   decoration: BoxDecoration(
-                    color: isCompleted ? Colors.white : Colors.white10,
+                    color: isCompleted ? AppColors.primaryBlue : AppColors.surfaceBackground,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: isCompleted ? Colors.white : Colors.white24,
-                      width: 2,
+                      color: isCompleted ? AppColors.primaryBlue : AppColors.border,
+                      width: 1.5,
                     ),
                   ),
                   child: Center(
                     child: Icon(
                       Icons.check,
-                      color: isCompleted ? const Color(0xFF4A148C) : Colors.transparent,
+                      color: isCompleted ? Colors.white : Colors.transparent,
                       size: 16,
                     ),
                   ),
@@ -152,9 +139,8 @@ class _DashboardJournalWidgetCardState extends State<DashboardJournalWidgetCard>
             const SizedBox(height: 16),
             Text(
               '${widget.data.winsCompletedToday}/4 wins completed',
-              style: const TextStyle(
-                color: Colors.white54,
-                fontSize: 12,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textTertiary,
               ),
             ),
           ],

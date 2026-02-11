@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../data/services/prayer_time_service.dart';
+import '../../../core/theme/app_theme.dart';
 
 class PrayerTimesScreen extends StatefulWidget {
   const PrayerTimesScreen({super.key});
@@ -38,17 +39,22 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
   
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        title: Text(
           'Prayer Times',
-          style: TextStyle(color: Colors.white),
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
+            icon: const Icon(Icons.refresh, color: AppColors.textPrimary),
             onPressed: _loadPrayerTimes,
             tooltip: 'Refresh prayer times',
           ),
@@ -63,24 +69,28 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
           children: [
             // Location info
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                color: AppColors.cardBackground,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.border, width: 1),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.location_on, color: Colors.blue, size: 20),
+                  const Icon(Icons.location_on, color: AppColors.primaryBlue, size: 20),
                   const SizedBox(width: 8),
-                  const Text(
+                  Text(
                     'Lahore, Pakistan',
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                   const Spacer(),
                   Text(
                     DateFormat('EEEE, MMM d').format(DateTime.now()),
-                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: AppColors.textTertiary,
+                    ),
                   ),
                 ],
               ),
@@ -88,111 +98,127 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
             
             const SizedBox(height: 24),
             
-            // Next Prayer Card
-            _buildNextPrayerCard(),
+            // Next Prayer Card (Premium Highlight)
+            _buildNextPrayerCard(theme),
             
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
+            
+            // Section Title
+            Text(
+              "Today's Schedule",
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
             
             // All Prayer Times
-            _buildPrayerTimeCard('Fajr', '🌅', prayerTimes['fajr']!),
+            _buildPrayerTimeCard('Fajr', Icons.wb_twilight, prayerTimes['fajr']!, AppColors.fajrColor),
             const SizedBox(height: 12),
-            _buildPrayerTimeCard('Sunrise', '🌄', prayerTimes['sunrise']!),
+            _buildPrayerTimeCard('Sunrise', Icons.wb_sunny_outlined, prayerTimes['sunrise']!, AppColors.textTertiary),
             const SizedBox(height: 12),
-            _buildPrayerTimeCard('Dhuhr', '☀️', prayerTimes['dhuhr']!),
+            _buildPrayerTimeCard('Dhuhr', Icons.wb_sunny, prayerTimes['dhuhr']!, AppColors.dhuhrColor),
             const SizedBox(height: 12),
-            _buildPrayerTimeCard('Asr', '🌤️', prayerTimes['asr']!),
+            _buildPrayerTimeCard('Asr', Icons.cloud_outlined, prayerTimes['asr']!, AppColors.asrColor),
             const SizedBox(height: 12),
-            _buildPrayerTimeCard('Maghrib', '🌆', prayerTimes['maghrib']!),
+            _buildPrayerTimeCard('Maghrib', Icons.nights_stay_outlined, prayerTimes['maghrib']!, AppColors.maghribColor),
             const SizedBox(height: 12),
-            _buildPrayerTimeCard('Isha', '🌙', prayerTimes['isha']!),
+            _buildPrayerTimeCard('Isha', Icons.nights_stay, prayerTimes['isha']!, AppColors.ishaColor),
             
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             
             // Calculation method info
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
+                color: AppColors.surfaceBackground,
+                borderRadius: BorderRadius.circular(16),
               ),
-              child: const Text(
-                'Calculation: University of Islamic Sciences, Karachi\nSchool: Hanafi',
-                style: TextStyle(color: Colors.white54, fontSize: 12),
+              child: Text(
+                'Calculation: University of Islamic Sciences, Karachi • School: Hanafi',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: AppColors.textTertiary,
+                ),
                 textAlign: TextAlign.center,
               ),
             ),
+            const SizedBox(height: 40),
           ],
         ),
       ),
     );
   }
   
-  Widget _buildNextPrayerCard() {
+  Widget _buildNextPrayerCard(ThemeData theme) {
     final timeRemaining = PrayerTimeService.formatTimeRemaining(
       nextPrayer['timeRemaining'] as Duration,
     );
     
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.blue.shade700, Colors.blue.shade900],
+          colors: [AppColors.primaryBlue, AppColors.deepBlue],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.blue.withOpacity(0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: AppColors.primaryBlue.withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'NEXT PRAYER',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1.2,
-            ),
-          ),
-          const SizedBox(height: 8),
           Row(
             children: [
-              Text(
-                nextPrayer['name'] as String,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'UPCOMING',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
                 ),
               ),
               const Spacer(),
               Text(
                 DateFormat('h:mm a').format(nextPrayer['time'] as DateTime),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: Colors.white.withOpacity(0.9),
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 20),
+          Text(
+            nextPrayer['name'] as String,
+            style: theme.textTheme.displaySmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
           Row(
             children: [
-              const Icon(Icons.timer_outlined, color: Colors.white70, size: 16),
-              const SizedBox(width: 6),
+              const Icon(Icons.timer_outlined, color: Colors.white, size: 20),
+              const SizedBox(width: 8),
               Text(
                 'in $timeRemaining',
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -202,45 +228,48 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
     );
   }
   
-  Widget _buildPrayerTimeCard(String name, String emoji, DateTime time) {
+  Widget _buildPrayerTimeCard(String name, IconData icon, DateTime time, Color accentColor) {
     final isNext = nextPrayer['name'] == name;
+    final theme = Theme.of(context);
     final formatter = DateFormat('h:mm a');
     
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isNext 
-            ? Colors.blue.withOpacity(0.2)
-            : Colors.grey.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+        color: isNext ? AppColors.surfaceBackground : AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isNext 
-              ? Colors.blue.withOpacity(0.5)
-              : Colors.transparent,
-          width: 2,
+          color: isNext ? AppColors.primaryBlue : AppColors.border,
+          width: isNext ? 1.5 : 1,
         ),
       ),
       child: Row(
         children: [
-          Text(
-            emoji,
-            style: const TextStyle(fontSize: 28),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: accentColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              color: accentColor,
+              size: 24,
+            ),
           ),
           const SizedBox(width: 16),
           Text(
             name,
-            style: TextStyle(
-              color: isNext ? Colors.white : Colors.white70,
-              fontSize: 18,
-              fontWeight: isNext ? FontWeight.w600 : FontWeight.w500,
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: isNext ? AppColors.textPrimary : AppColors.textSecondary,
+              fontWeight: isNext ? FontWeight.bold : FontWeight.w500,
             ),
           ),
           const Spacer(),
           Text(
             formatter.format(time),
-            style: TextStyle(
-              color: isNext ? Colors.white : Colors.white70,
-              fontSize: 18,
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: isNext ? AppColors.primaryBlue : AppColors.textPrimary,
               fontWeight: FontWeight.w600,
             ),
           ),

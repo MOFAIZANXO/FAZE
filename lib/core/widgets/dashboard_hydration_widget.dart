@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 import '../contracts/widget_contracts.dart';
 
 /// Hydration Widget for Dashboard
 /// 
 /// Shows progress bar, glasses count, and water drop icons.
-/// Features a cyan accent color and smooth progress animation.
+/// Features the theme's primary blue accent.
 class DashboardHydrationWidgetCard extends StatelessWidget {
   final DashboardHydrationWidget data;
 
@@ -15,8 +16,6 @@ class DashboardHydrationWidgetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const accentColor = Color(0xFF00BCD4);
-    
     return GestureDetector(
       onTap: () {
         Feedback.forTap(context);
@@ -27,36 +26,34 @@ class DashboardHydrationWidgetCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E1E1E),
+          color: AppColors.cardBackground,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: accentColor.withOpacity(0.3)),
+          border: Border.all(color: AppColors.border, width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.water_drop, color: accentColor, size: 20),
+                const Icon(Icons.water_drop, color: AppColors.primaryBlue, size: 20),
                 const SizedBox(width: 8),
-                const Text(
+                Text(
                   'Hydration',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const Spacer(),
                 Text(
                   '${data.currentGlasses}/${data.targetGlasses} glasses',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             Row(
               children: List.generate(data.targetGlasses, (index) {
                 final isFilled = index < data.currentGlasses;
@@ -65,8 +62,8 @@ class DashboardHydrationWidgetCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 2),
                     child: Icon(
                       Icons.water_drop,
-                      color: isFilled ? accentColor : Colors.white12,
-                      size: 18,
+                      color: isFilled ? AppColors.primaryBlue : AppColors.border,
+                      size: 16,
                     ),
                   ),
                 );
@@ -74,20 +71,19 @@ class DashboardHydrationWidgetCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
                 value: data.percentComplete,
-                backgroundColor: Colors.white10,
-                valueColor: const AlwaysStoppedAnimation<Color>(accentColor),
-                minHeight: 8,
+                backgroundColor: AppColors.border,
+                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+                minHeight: 6,
               ),
             ),
             const SizedBox(height: 12),
             Text(
               '${(data.percentComplete * 100).toInt()}% complete',
-              style: const TextStyle(
-                color: Colors.white54,
-                fontSize: 12,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textTertiary,
               ),
             ),
           ],

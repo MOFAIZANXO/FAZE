@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 import '../contracts/widget_contracts.dart';
 
 /// Quick Stats Row for Dashboard
 /// 
 /// Shows 3 small stat cards: Streak, Tasks, and Water.
+/// Refined with the Black + Blue theme.
 class QuickStatsRow extends StatelessWidget {
   final DashboardData data;
 
@@ -18,65 +20,65 @@ class QuickStatsRow extends StatelessWidget {
       children: [
         Expanded(
           child: _buildStatItem(
+            context,
             value: '${data.journal.currentStreak}',
             label: 'Streak',
             icon: Icons.local_fire_department,
-            color: Colors.orange,
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: _buildStatItem(
+            context,
             value: '${data.tasks.completedTasks}/${data.tasks.totalTasks}',
             label: 'Tasks',
             icon: Icons.check_circle,
-            color: Colors.green,
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: _buildStatItem(
+            context,
             value: '${(data.hydration.percentComplete * 100).toInt()}%',
             label: 'Water',
             icon: Icons.water_drop,
-            color: Colors.blue,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildStatItem({
+  Widget _buildStatItem(
+    BuildContext context, {
     required String value,
     required String label,
     required IconData icon,
-    required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2)),
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border, width: 1),
       ),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(height: 4),
+          Icon(icon, color: AppColors.primaryBlue, size: 20),
+          const SizedBox(height: 8),
           Text(
             value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: AppColors.textPrimary,
               fontWeight: FontWeight.bold,
             ),
           ),
+          const SizedBox(height: 2),
           Text(
             label,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppColors.textTertiary,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
             ),
           ),
         ],

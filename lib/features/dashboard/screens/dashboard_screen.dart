@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-
-// ✅ ADD THESE IMPORTS
 import '../../../core/contracts/widget_contracts.dart';
 import '../services/dashboard_service.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/dashboard_prayer_widget.dart';
+import '../../../core/widgets/dashboard_hydration_widget.dart';
+import '../../../core/widgets/dashboard_tasks_widget.dart';
+import '../../../core/widgets/dashboard_journal_widget.dart';
+import '../../../core/widgets/dashboard_exercise_widget.dart';
+import '../../../core/widgets/quick_stats_row.dart';
 
-/// Dashboard Screen - Main home screen
-/// 
-/// Shows widget grid with all feature summaries:
-/// - Next prayer
-/// - Hydration progress
-/// - Today's tasks
-/// - Journal streak
-/// - Exercise status
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -22,30 +18,33 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   late DashboardData _data;
-  
+
   @override
   void initState() {
     super.initState();
     _loadData();
   }
-  
+
   void _loadData() {
     setState(() {
       _data = DashboardService.getDashboardData();
     });
   }
-  
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: AppColors.background,
+        elevation: 0,
         title: const Text(
           'FAZE',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 24,
+            fontSize: 26,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -58,71 +57,121 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: () async => _loadData(),
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Greeting
-              _buildGreeting(),
-              const SizedBox(height: 24),
-              
-              // Quick Stats Row
-              _buildQuickStats(),
-              const SizedBox(height: 24),
-              
-              // Main Widget Grid
-              const Text(
-                'Today\'s Overview',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+        child: Stack(
+          children: [
+            // ✅ FIXED: Clean background glow blobs (no broken SelectionArea)
+            Positioned(
+              top: -100,
+              right: -50,
+              child: Container(
+                width: 300,
+                height: 300,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.primaryBlue.withOpacity(0.08),
+                      Colors.transparent,
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
-              
-              // AG will replace these with beautiful widgets
-              _buildPrayerWidget(_data.prayer),
-              const SizedBox(height: 12),
-              _buildHydrationWidget(_data.hydration),
-              const SizedBox(height: 12),
-              _buildTasksWidget(_data.tasks),
-              const SizedBox(height: 12),
-              _buildJournalWidget(_data.journal),
-              const SizedBox(height: 12),
-              _buildExerciseWidget(_data.exercise),
-            ],
-          ),
+            ),
+            Positioned(
+              top: 200,
+              left: -100,
+              child: Container(
+                width: 400,
+                height: 400,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.primaryBlue.withOpacity(0.06),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 100,
+              right: -150,
+              child: Container(
+                width: 500,
+                height: 500,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.deepBlue.withOpacity(0.05),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // ── Main Content ──────────────────────────────
+            SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Greeting
+                  _buildGreeting(theme),
+                  const SizedBox(height: 32),
+
+                  // Quick Stats Row
+                  QuickStatsRow(data: _data),
+                  const SizedBox(height: 32),
+
+                  // Overview title
+                  Text(
+                    "Today's Overview",
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Widget Grid
+                  _buildOverviewGrid(),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
-  
-  Widget _buildGreeting() {
+
+  Widget _buildGreeting(ThemeData theme) {
     final hour = DateTime.now().hour;
-    final greeting = hour < 12 
-        ? 'Good Morning' 
-        : hour < 17 
-            ? 'Good Afternoon' 
+    final greeting = hour < 12
+        ? 'Good Morning'
+        : hour < 17
+            ? 'Good Afternoon'
             : 'Good Evening';
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           greeting,
-          style: const TextStyle(
-            color: Colors.white70,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: AppColors.textSecondary,
             fontSize: 16,
           ),
         ),
-        const SizedBox(height: 4),
-        const Text(
+        const SizedBox(height: 8),
+        Text(
           'Ready to make progress?',
-          style: TextStyle(
-            color: Colors.white,
+          style: theme.textTheme.headlineMedium?.copyWith(
+            color: AppColors.textPrimary,
             fontSize: 28,
             fontWeight: FontWeight.bold,
           ),
@@ -130,150 +179,42 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ],
     );
   }
-  
-  Widget _buildQuickStats() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildStatCard(
-            '${_data.journal.currentStreak}',
-            'Day Streak',
-            Icons.local_fire_department,
-            Colors.orange,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
-            '${_data.tasks.completedTasks}/${_data.tasks.totalTasks}',
-            'Tasks Done',
-            Icons.check_circle,
-            Colors.green,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
-            '${(_data.hydration.percentComplete * 100).toInt()}%',
-            'Hydrated',
-            Icons.water_drop,
-            Colors.blue,
-          ),
-        ),
-      ],
-    );
-  }
-  
-  Widget _buildStatCard(String value, String label, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 12,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  // PLACEHOLDER WIDGETS - AG will make these beautiful
-  
-  Widget _buildPrayerWidget(DashboardPrayerWidget data) {
-    return _buildPlaceholderCard(
-      '🕌 Next Prayer',
-      '${data.nextPrayerName} • ${data.timeRemaining}',
-      Colors.blue,
-    );
-  }
-  
-  Widget _buildHydrationWidget(DashboardHydrationWidget data) {
-    return _buildPlaceholderCard(
-      '💧 Hydration',
-      '${data.currentGlasses}/${data.targetGlasses} glasses',
-      Colors.cyan,
-    );
-  }
-  
-  Widget _buildTasksWidget(DashboardTasksWidget data) {
-    return _buildPlaceholderCard(
-      '✅ Tasks',
-      '${data.completedTasks}/${data.totalTasks} completed',
-      Colors.green,
-    );
-  }
-  
-  Widget _buildJournalWidget(DashboardJournalWidget data) {
-    return _buildPlaceholderCard(
-      '📓 Journal',
-      '${data.winsCompletedToday}/4 wins today',
-      Colors.purple,
-    );
-  }
-  
-  Widget _buildExerciseWidget(DashboardExerciseWidget data) {
-    return _buildPlaceholderCard(
-      '🏋️ Exercise',
-      '${data.weeklyWorkoutCount}/${data.weeklyGoal} workouts this week',
-      Colors.orange,
-    );
-  }
-  
-  Widget _buildPlaceholderCard(String title, String subtitle, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Icon(Icons.arrow_forward_ios, color: color, size: 16),
-        ],
-      ),
+
+  Widget _buildOverviewGrid() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth > 600) {
+          return GridView.count(
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            crossAxisCount: 2,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 1.5,
+            children: [
+              DashboardPrayerWidgetCard(data: _data.prayer),
+              DashboardHydrationWidgetCard(data: _data.hydration),
+              DashboardTasksWidgetCard(data: _data.tasks),
+              DashboardJournalWidgetCard(data: _data.journal),
+              DashboardExerciseWidgetCard(data: _data.exercise),
+            ],
+          );
+        } else {
+          return Column(
+            children: [
+              DashboardPrayerWidgetCard(data: _data.prayer),
+              const SizedBox(height: 16),
+              DashboardHydrationWidgetCard(data: _data.hydration),
+              const SizedBox(height: 16),
+              DashboardTasksWidgetCard(data: _data.tasks),
+              const SizedBox(height: 16),
+              DashboardJournalWidgetCard(data: _data.journal),
+              const SizedBox(height: 16),
+              DashboardExerciseWidgetCard(data: _data.exercise),
+            ],
+          );
+        }
+      },
     );
   }
 }

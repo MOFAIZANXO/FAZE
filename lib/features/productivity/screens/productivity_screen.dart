@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 
 /// Productivity Screen
 /// 
@@ -11,42 +12,56 @@ class ProductivityScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        title: Text(
           'Productivity',
-          style: TextStyle(color: Colors.white),
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           _buildFeatureCard(
-            '✅ Tasks',
-            'Manage your to-do list',
-            Colors.green,
+            context,
+            'Tasks',
+            'Manage your daily to-do list',
+            Icons.check_circle_outline,
             () {
-              // TODO: Navigate to tasks screen when built
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Tasks management coming soon!')),
+              );
             },
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           _buildFeatureCard(
-            '📝 Quick Notes',
-            'Capture ideas instantly',
-            Colors.yellow.shade700,
+            context,
+            'Quick Notes',
+            'Capture ideas and thoughts instantly',
+            Icons.note_alt_outlined,
             () {
-              // TODO: Navigate to notes screen when built
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Notes feature coming soon!')),
+              );
             },
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           _buildFeatureCard(
-            '🎂 Birthdays',
-            'Never miss a celebration',
-            Colors.pink,
+            context,
+            'Birthdays',
+            'Track and celebrate special days',
+            Icons.cake_outlined,
             () {
-              // TODO: Navigate to birthdays screen when built
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Birthday tracker coming soon!')),
+              );
             },
           ),
         ],
@@ -55,50 +70,70 @@ class ProductivityScreen extends StatelessWidget {
   }
   
   Widget _buildFeatureCard(
+    BuildContext context,
     String title,
     String subtitle,
-    Color color,
+    IconData icon,
     VoidCallback onTap,
   ) {
-    return InkWell(
-      onTap: () {
-        // Show coming soon for now
-      },
+    final theme = Theme.of(context);
+    
+    return Material(
+      color: AppColors.cardBackground,
       borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.3)),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        splashColor: AppColors.primaryBlue.withOpacity(0.1),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border, width: 1),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryBlue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  color: AppColors.primaryBlue,
+                  size: 24,
+                ),
               ),
-            ),
-            Icon(Icons.arrow_forward_ios, color: color, size: 20),
-          ],
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_ios,
+                color: AppColors.textTertiary,
+                size: 16,
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 
 /// Analytics Screen
 /// 
@@ -12,95 +13,100 @@ class AnalyticsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        title: Text(
           'Analytics',
-          style: TextStyle(color: Colors.white),
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(40),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.blue.shade700, Colors.blue.shade900],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.insights,
-                  color: Colors.white,
-                  size: 64,
-                ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(40),
+              decoration: BoxDecoration(
+                color: AppColors.primaryBlue.withOpacity(0.1),
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.primaryBlue.withOpacity(0.2), width: 2),
               ),
-              const SizedBox(height: 32),
-              const Text(
-                'Your Progress',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
+              child: const Icon(
+                Icons.insights,
+                color: AppColors.primaryBlue,
+                size: 64,
               ),
-              const SizedBox(height: 16),
-              Text(
-                'Track your growth across\nall areas of life',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
-                ),
+            ),
+            const SizedBox(height: 32),
+            Text(
+              'Your Progress',
+              style: theme.textTheme.displaySmall?.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: 40),
-              _buildStatRow('Prayer Completion', '85%', Colors.blue),
-              const SizedBox(height: 16),
-              _buildStatRow('Task Completion', '72%', Colors.green),
-              const SizedBox(height: 16),
-              _buildStatRow('Journal Streak', '7 days', Colors.purple),
-              const SizedBox(height: 16),
-              _buildStatRow('Hydration Goal', '90%', Colors.cyan),
-              const SizedBox(height: 16),
-              _buildStatRow('Weekly Workouts', '3/4', Colors.orange),
-            ],
-          ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Comprehensive insights into your growth and performance metrics across all pillars.',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 48),
+            
+            _buildStatCard(context, 'Prayer Completion', '85%', Icons.mosque),
+            const SizedBox(height: 16),
+            _buildStatCard(context, 'Task Discovery', '72%', Icons.check_circle_outline),
+            const SizedBox(height: 16),
+            _buildStatCard(context, 'Journaling Streak', '7 days', Icons.auto_awesome),
+            const SizedBox(height: 16),
+            _buildStatCard(context, 'Hydration Target', '90%', Icons.water_drop),
+            const SizedBox(height: 16),
+            _buildStatCard(context, 'Exercise Consistency', '3/4', Icons.fitness_center),
+            
+            const SizedBox(height: 40),
+          ],
         ),
       ),
     );
   }
   
-  Widget _buildStatRow(String label, String value, Color color) {
+  Widget _buildStatCard(BuildContext context, String label, String value, IconData icon) {
+    final theme = Theme.of(context);
+    
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border, width: 1),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 16,
+          Icon(icon, color: AppColors.primaryBlue.withOpacity(0.7), size: 24),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              label,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
           Text(
             value,
-            style: TextStyle(
-              color: color,
-              fontSize: 18,
+            style: theme.textTheme.titleLarge?.copyWith(
+              color: AppColors.primaryBlue,
               fontWeight: FontWeight.bold,
             ),
           ),

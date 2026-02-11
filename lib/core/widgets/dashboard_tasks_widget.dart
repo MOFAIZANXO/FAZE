@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 import '../contracts/widget_contracts.dart';
 
 /// Tasks Widget for Dashboard
 /// 
 /// Shows top 3 tasks with checkboxes and completion progress.
-/// Features a green accent color.
+/// Features the theme's primary blue accent.
 class DashboardTasksWidgetCard extends StatelessWidget {
   final DashboardTasksWidget data;
 
@@ -15,8 +16,6 @@ class DashboardTasksWidgetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const accentColor = Color(0xFF4CAF50);
-
     return GestureDetector(
       onTap: () {
         Feedback.forTap(context);
@@ -27,31 +26,29 @@ class DashboardTasksWidgetCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E1E1E),
+          color: AppColors.cardBackground,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: accentColor.withOpacity(0.3)),
+          border: Border.all(color: AppColors.border, width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.check_circle, color: accentColor, size: 20),
+                const Icon(Icons.check_circle, color: AppColors.primaryBlue, size: 20),
                 const SizedBox(width: 8),
-                const Text(
+                Text(
                   'Today\'s Tasks',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const Spacer(),
                 Text(
                   '${data.completedTasks}/${data.totalTasks} done',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -61,18 +58,17 @@ class DashboardTasksWidgetCard extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.radio_button_unchecked,
-                        color: Colors.white30,
-                        size: 18,
+                        color: AppColors.textTertiary,
+                        size: 16,
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           title,
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textSecondary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -83,12 +79,11 @@ class DashboardTasksWidgetCard extends StatelessWidget {
                 )),
             if (data.totalTasks > 3)
               Padding(
-                padding: const EdgeInsets.only(top: 4, left: 30),
+                padding: const EdgeInsets.only(top: 4, left: 28),
                 child: Text(
                   '+ ${data.totalTasks - 3} more tasks',
-                  style: const TextStyle(
-                    color: Colors.white30,
-                    fontSize: 12,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textTertiary,
                     fontStyle: FontStyle.italic,
                   ),
                 ),
@@ -98,8 +93,8 @@ class DashboardTasksWidgetCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
                 value: data.totalTasks > 0 ? data.completedTasks / data.totalTasks : 0,
-                backgroundColor: Colors.white10,
-                valueColor: const AlwaysStoppedAnimation<Color>(accentColor),
+                backgroundColor: AppColors.border,
+                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
                 minHeight: 4,
               ),
             ),

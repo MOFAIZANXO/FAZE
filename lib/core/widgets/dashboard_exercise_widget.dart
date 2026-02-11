@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 import '../contracts/widget_contracts.dart';
 
 /// Exercise Widget for Dashboard
 /// 
 /// Shows weekly workout progress with dots.
-/// Features an orange accent color.
+/// Features the theme's primary blue accent.
 class DashboardExerciseWidgetCard extends StatelessWidget {
   final DashboardExerciseWidget data;
 
@@ -15,8 +16,6 @@ class DashboardExerciseWidgetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const accentColor = Color(0xFFFF9800);
-
     return GestureDetector(
       onTap: () {
         Feedback.forTap(context);
@@ -27,22 +26,21 @@ class DashboardExerciseWidgetCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E1E1E),
+          color: AppColors.cardBackground,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: accentColor.withOpacity(0.3)),
+          border: Border.all(color: AppColors.border, width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.fitness_center, color: accentColor, size: 20),
+                const Icon(Icons.fitness_center, color: AppColors.primaryBlue, size: 20),
                 const SizedBox(width: 8),
-                const Text(
+                Text(
                   'Exercise',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -51,14 +49,14 @@ class DashboardExerciseWidgetCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: data.completedToday 
-                        ? Colors.green.withOpacity(0.2) 
-                        : Colors.white.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(12),
+                        ? AppColors.success.withOpacity(0.1) 
+                        : AppColors.textTertiary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     data.completedToday ? 'COMPLETED' : 'PENDING',
                     style: TextStyle(
-                      color: data.completedToday ? Colors.green : Colors.white38,
+                      color: data.completedToday ? AppColors.success : AppColors.textTertiary,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                     ),
@@ -66,13 +64,11 @@ class DashboardExerciseWidgetCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             Text(
               'This Week: ${data.weeklyWorkoutCount}/${data.weeklyGoal} workouts',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 12),
@@ -80,11 +76,11 @@ class DashboardExerciseWidgetCard extends StatelessWidget {
               children: List.generate(data.weeklyGoal, (index) {
                 final isCompleted = index < data.weeklyWorkoutCount;
                 return Container(
-                  width: 12,
-                  height: 12,
+                  width: 10,
+                  height: 10,
                   margin: const EdgeInsets.only(right: 8),
                   decoration: BoxDecoration(
-                    color: isCompleted ? accentColor : Colors.white12,
+                    color: isCompleted ? AppColors.primaryBlue : AppColors.border,
                     shape: BoxShape.circle,
                   ),
                 );
@@ -101,13 +97,12 @@ class DashboardExerciseWidgetCard extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: accentColor,
+                  backgroundColor: AppColors.primaryBlue,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
                 child: const Text('LOG WORKOUT'),
               ),

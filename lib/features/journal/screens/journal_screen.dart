@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 
 /// Journal Screen - Jun Yun 4 Wins
 /// 
@@ -12,97 +13,103 @@ class JournalScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        title: Text(
           'Jun Yun Journal',
-          style: TextStyle(color: Colors.white),
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
-      body: Center(
+      body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
                 padding: const EdgeInsets.all(40),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.purple.shade700, Colors.purple.shade900],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  color: AppColors.primaryBlue.withOpacity(0.1),
                   shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.primaryBlue.withOpacity(0.2), width: 2),
                 ),
                 child: const Icon(
                   Icons.auto_awesome,
-                  color: Colors.white,
+                  color: AppColors.primaryBlue,
                   size: 64,
                 ),
               ),
               const SizedBox(height: 32),
-              const Text(
+              Text(
                 '4 Wins Journal',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
+                style: theme.textTheme.displaySmall?.copyWith(
+                  color: AppColors.textPrimary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 16),
               Text(
-                'Complete your daily reflection\nacross 4 pillars of growth',
+                'Complete your daily reflection across the 4 pillars of growth and self-mastery.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: AppColors.textSecondary,
                 ),
               ),
-              const SizedBox(height: 32),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildPillar('🧠', 'Mental'),
-                  const SizedBox(width: 16),
-                  _buildPillar('💪', 'Physical'),
-                  const SizedBox(width: 16),
-                  _buildPillar('✨', 'Spiritual'),
-                  const SizedBox(width: 16),
-                  _buildPillar('📝', 'Account'),
-                ],
+              const SizedBox(height: 48),
+              
+              // Pillars Grid
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: AppColors.cardBackground,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: AppColors.border, width: 1),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildPillar(context, '🧠', 'Mental'),
+                        _buildPillar(context, '💪', 'Physical'),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildPillar(context, '✨', 'Spiritual'),
+                        _buildPillar(context, '📝', 'Account'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 48),
+              
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Journal entry system coming soon!'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                  child: const Text('Start Today\'s Entry'),
+                ),
               ),
               const SizedBox(height: 40),
-              ElevatedButton(
-                onPressed: () {
-                  // TODO: Navigate to journal entry when built
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Coming soon!'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 16,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  'Start Today\'s Entry',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -110,19 +117,29 @@ class JournalScreen extends StatelessWidget {
     );
   }
   
-  Widget _buildPillar(String emoji, String label) {
+  Widget _buildPillar(BuildContext context, String emoji, String label) {
+    final theme = Theme.of(context);
+    
     return Column(
       children: [
-        Text(
-          emoji,
-          style: const TextStyle(fontSize: 32),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border, width: 1),
+          ),
+          child: Text(
+            emoji,
+            style: const TextStyle(fontSize: 32),
+          ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 12),
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 12,
+          style: theme.textTheme.titleMedium?.copyWith(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],

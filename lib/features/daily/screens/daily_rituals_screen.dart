@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/theme/app_theme.dart';
 
 /// Daily Rituals Screen
 /// 
@@ -12,13 +13,18 @@ class DailyRitualsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        title: Text(
           'Daily Rituals',
-          style: TextStyle(color: Colors.white),
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: ListView(
@@ -26,34 +32,32 @@ class DailyRitualsScreen extends StatelessWidget {
         children: [
           _buildFeatureCard(
             context,
-            '🕌 Prayer Times',
+            'Prayer Times',
             'View today\'s prayer schedule',
-            Colors.blue,
+            Icons.mosque,
             () => context.push('/prayer-times'),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           _buildFeatureCard(
             context,
-            '💧 Hydration Tracker',
-            'Track your water intake',
-            Colors.cyan,
+            'Hydration Tracker',
+            'Track your daily water intake',
+            Icons.water_drop,
             () {
-              // TODO: Navigate to hydration screen when built
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Coming soon!')),
+                const SnackBar(content: Text('Hydration tracker coming soon!')),
               );
             },
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           _buildFeatureCard(
             context,
-            '🏋️ Exercise Logger',
-            'Log your workouts',
-            Colors.orange,
+            'Exercise Logger',
+            'Log your daily workouts',
+            Icons.fitness_center,
             () {
-              // TODO: Navigate to exercise screen when built
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Coming soon!')),
+                const SnackBar(content: Text('Exercise logger coming soon!')),
               );
             },
           ),
@@ -66,46 +70,67 @@ class DailyRitualsScreen extends StatelessWidget {
     BuildContext context,
     String title,
     String subtitle,
-    Color color,
+    IconData icon,
     VoidCallback onTap,
   ) {
-    return InkWell(
-      onTap: onTap,
+    final theme = Theme.of(context);
+    
+    return Material(
+      color: AppColors.cardBackground,
       borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.3)),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        splashColor: AppColors.primaryBlue.withOpacity(0.1),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border, width: 1),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryBlue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  color: AppColors.primaryBlue,
+                  size: 24,
+                ),
               ),
-            ),
-            Icon(Icons.arrow_forward_ios, color: color, size: 20),
-          ],
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_ios,
+                color: AppColors.textTertiary,
+                size: 16,
+              ),
+            ],
+          ),
         ),
       ),
     );

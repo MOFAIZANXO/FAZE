@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../theme/app_theme.dart';
 
 /// Premium Bottom Navigation Bar
 /// 
@@ -21,15 +22,11 @@ class AppBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF212121),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
+      decoration: const BoxDecoration(
+        color: AppColors.cardBackground,
+        border: Border(
+          top: BorderSide(color: AppColors.border, width: 1),
+        ),
       ),
       child: SafeArea(
         child: SizedBox(
@@ -87,7 +84,7 @@ class AppBottomNav extends StatelessWidget {
     required IconData activeIcon,
   }) {
     final isActive = currentIndex == index;
-    final color = isActive ? const Color(0xFF2196F3) : const Color(0xFF9E9E9E);
+    final color = isActive ? AppColors.primaryBlue : AppColors.textTertiary;
 
     return Expanded(
       child: InkWell(
@@ -103,15 +100,16 @@ class AppBottomNav extends StatelessWidget {
             Icon(
               isActive ? activeIcon : icon,
               color: color,
-              size: 26,
+              size: 24, // Slightly smaller for a cleaner look
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
                 color: color,
-                fontSize: 12,
+                fontSize: 10, // Modern minimal typography
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                letterSpacing: 0.5,
               ),
             ),
             const SizedBox(height: 4),
@@ -119,9 +117,9 @@ class AppBottomNav extends StatelessWidget {
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               height: 2,
-              width: isActive ? 20 : 0,
+              width: isActive ? 16 : 0,
               decoration: BoxDecoration(
-                color: const Color(0xFF2196F3),
+                color: AppColors.primaryBlue,
                 borderRadius: BorderRadius.circular(1),
               ),
             ),
