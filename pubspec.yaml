@@ -5,48 +5,58 @@ version: 1.0.0+1
 
 environment:
   sdk: '>=3.2.0 <4.0.0'
+  flutter: '>=3.19.0'
 
 dependencies:
   flutter:
     sdk: flutter
-  adhan: ^2.0.0+1
-  # State Management
-  flutter_riverpod: ^2.5.1
+  flutter_localizations:
+    sdk: flutter
   
-  # Local Database
+  # State Management
+  flutter_riverpod: ^2.6.1
+  
+  # Database
   isar: ^3.1.0+1
   isar_flutter_libs: ^3.1.0+1
   path_provider: ^2.1.4
   
+  # Navigation
+  go_router: ^14.6.2
+  
+  # Prayer Times
+  adhan: ^2.0.0+1
+  
   # Notifications
-  flutter_local_notifications: ^17.2.3
+  flutter_local_notifications: ^17.2.4
   timezone: ^0.9.4
   
   # Location
-  geolocator: ^13.0.2
+  geolocator: ^13.0.4
   geocoding: ^3.0.0
   
-  # UI
-  google_fonts: ^6.2.1
-  flutter_slidable: ^3.1.1
-  intl: ^0.19.0
-  fl_chart: ^0.69.0
+  # UI Components
+  google_fonts: ^6.3.3
+  flutter_slidable: ^3.1.2
+  intl: 0.20.2
+  fl_chart: ^0.69.2
   
   # Utils
-  uuid: ^4.5.1
-  shared_preferences: ^2.3.3
+  uuid: ^4.5.2
+  shared_preferences: ^2.3.4
   permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
-  build_runner: ^2.4.13
+  flutter_lints: ^2.0.0
+  build_runner: ^2.4.0
   isar_generator: ^3.1.0+1
-  flutter_launcher_icons: ^0.14.1
 
 flutter:
   uses-material-design: true
-  assets:
-    - assets/images/
-    - assets/sounds/
+  
+  # Add assets here when needed
+  # assets:
+  #   - images/
+  #   - icons/
