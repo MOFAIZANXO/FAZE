@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+// ✅ ADD THESE IMPORTS
 import '../../../core/contracts/widget_contracts.dart';
 import '../services/dashboard_service.dart';
 
@@ -70,7 +73,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(height: 24),
               
               // Main Widget Grid
-              Text(
+              const Text(
                 'Today\'s Overview',
                 style: TextStyle(
                   color: Colors.white,
@@ -110,13 +113,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       children: [
         Text(
           greeting,
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white70,
             fontSize: 16,
           ),
         ),
         const SizedBox(height: 4),
-        Text(
+        const Text(
           'Ready to make progress?',
           style: TextStyle(
             color: Colors.white,
@@ -175,7 +178,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 8),
           Text(
             value,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -183,7 +186,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white70,
               fontSize: 12,
             ),
@@ -251,7 +254,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 Text(
                   title,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -260,7 +263,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 14,
                   ),

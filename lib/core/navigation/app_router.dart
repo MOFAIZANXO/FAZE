@@ -6,126 +6,120 @@ import '../../features/productivity/screens/productivity_screen.dart';
 import '../../features/journal/screens/journal_screen.dart';
 import '../../features/analytics/screens/analytics_screen.dart';
 import '../../features/prayers/screens/prayer_times_screen.dart';
+import '../widgets/app_bottom_nav.dart';
 
-/// Main app router configuration
+/// Main app router with StatefulShellRoute for bottom navigation
 /// 
-/// 5 main tabs accessible via bottom navigation:
-/// - Dashboard (Home)
-/// - Daily Rituals (Prayer, Hydration, Exercise)
-/// - Productivity (Tasks, Notes, Birthdays)
-/// - Journal (4 Wins)
-/// - Analytics (Stats, Insights)
+/// This keeps each tab's state preserved when switching between tabs
 class AppRouter {
   static final GoRouter router = GoRouter(
     initialLocation: '/',
     routes: [
-      // Bottom Navigation Routes (Main Tabs)
-      GoRoute(
-        path: '/',
-        name: 'dashboard',
-        pageBuilder: (context, state) => _buildPageWithTransition(
-          context,
-          state,
-          const DashboardScreen(),
-        ),
+      // Main Shell with Bottom Navigation
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return ScaffoldWithBottomNav(navigationShell: navigationShell);
+        },
+        branches: [
+          // Tab 1: Dashboard
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/',
+                name: 'dashboard',
+                pageBuilder: (context, state) => const NoTransitionPage(
+                  child: DashboardScreen(),
+                ),
+              ),
+            ],
+          ),
+          
+          // Tab 2: Daily Rituals
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/daily',
+                name: 'daily',
+                pageBuilder: (context, state) => const NoTransitionPage(
+                  child: DailyRitualsScreen(),
+                ),
+              ),
+            ],
+          ),
+          
+          // Tab 3: Productivity
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/productivity',
+                name: 'productivity',
+                pageBuilder: (context, state) => const NoTransitionPage(
+                  child: ProductivityScreen(),
+                ),
+              ),
+            ],
+          ),
+          
+          // Tab 4: Journal
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/journal',
+                name: 'journal',
+                pageBuilder: (context, state) => const NoTransitionPage(
+                  child: JournalScreen(),
+                ),
+              ),
+            ],
+          ),
+          
+          // Tab 5: Analytics
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/analytics',
+                name: 'analytics',
+                pageBuilder: (context, state) => const NoTransitionPage(
+                  child: AnalyticsScreen(),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       
-      GoRoute(
-        path: '/daily',
-        name: 'daily',
-        pageBuilder: (context, state) => _buildPageWithTransition(
-          context,
-          state,
-          const DailyRitualsScreen(),
-        ),
-      ),
-      
-      GoRoute(
-        path: '/productivity',
-        name: 'productivity',
-        pageBuilder: (context, state) => _buildPageWithTransition(
-          context,
-          state,
-          const ProductivityScreen(),
-        ),
-      ),
-      
-      GoRoute(
-        path: '/journal',
-        name: 'journal',
-        pageBuilder: (context, state) => _buildPageWithTransition(
-          context,
-          state,
-          const JournalScreen(),
-        ),
-      ),
-      
-      GoRoute(
-        path: '/analytics',
-        name: 'analytics',
-        pageBuilder: (context, state) => _buildPageWithTransition(
-          context,
-          state,
-          const AnalyticsScreen(),
-        ),
-      ),
-      
-      // Feature Detail Routes
+      // Full-screen routes (outside bottom nav)
       GoRoute(
         path: '/prayer-times',
         name: 'prayer-times',
-        pageBuilder: (context, state) => MaterialPage(
-          child: const PrayerTimesScreen(),
+        pageBuilder: (context, state) => const MaterialPage(
+          child: PrayerTimesScreen(),
         ),
       ),
-      
-      // Add more feature routes as we build them:
-      // /tasks, /hydration, /exercise, /notes, /birthdays, /4-wins
     ],
   );
-  
-  /// Build page with fade transition
-  static Page _buildPageWithTransition(
-    BuildContext context,
-    GoRouterState state,
-    Widget child,
-  ) {
-    return CustomTransitionPage(
-      key: state.pageKey,
-      child: child,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        return FadeTransition(
-          opacity: animation,
-          child: child,
-        );
-      },
-    );
-  }
 }
 
-/// Navigation helper for quick access
-class AppNavigation {
-  static void goToDashboard(BuildContext context) {
-    context.go('/');
-  }
-  
-  static void goToDaily(BuildContext context) {
-    context.go('/daily');
-  }
-  
-  static void goToProductivity(BuildContext context) {
-    context.go('/productivity');
-  }
-  
-  static void goToJournal(BuildContext context) {
-    context.go('/journal');
-  }
-  
-  static void goToAnalytics(BuildContext context) {
-    context.go('/analytics');
-  }
-  
-  static void goToPrayerTimes(BuildContext context) {
-    context.push('/prayer-times');
+/// Scaffold with Bottom Navigation
+class ScaffoldWithBottomNav extends StatelessWidget {
+  final StatefulNavigationShell navigationShell;
+
+  const ScaffoldWithBottomNav({
+    super.key,
+    required this.navigationShell,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: navigationShell,
+      bottomNavigationBar: AppBottomNav(
+        currentIndex: navigationShell.currentIndex,
+        onTap: (index) => navigationShell.goBranch(
+          index,
+          initialLocation: index == navigationShell.currentIndex,
+        ),
+      ),
+    );
   }
 }

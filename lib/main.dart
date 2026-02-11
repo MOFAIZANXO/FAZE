@@ -21,7 +21,7 @@ class FazeApp extends StatelessWidget {
       title: 'FAZE',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      routerConfig: AppRouter.router,
+      routerConfig: AppRouter.router,  // ← THIS IS THE KEY LINE!
     );
   }
 }
