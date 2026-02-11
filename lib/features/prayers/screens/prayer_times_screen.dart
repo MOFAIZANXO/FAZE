@@ -1,31 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:timezone/data/latest.dart' as tz;
-import 'core/theme/app_theme.dart';
-import 'data/services/database_service.dart';
-import 'data/services/prayer_time_service.dart';
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  tz.initializeTimeZones();
-  await DatabaseService.initialize();
-  runApp(const ProviderScope(child: FazeApp()));
-}
-
-class FazeApp extends StatelessWidget {
-  const FazeApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'FAZE',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
-      home: const PrayerTimesScreen(),
-    );
-  }
-}
+import '../../../data/services/prayer_time_service.dart';
 
 class PrayerTimesScreen extends StatefulWidget {
   const PrayerTimesScreen({super.key});
@@ -35,7 +10,7 @@ class PrayerTimesScreen extends StatefulWidget {
 }
 
 class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
-  // Lahore coordinates
+  // Lahore coordinates (update these if user is in different location)
   static const double latitude = 31.5204;
   static const double longitude = 74.3587;
   
@@ -68,46 +43,72 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         title: const Text(
-          'FAZE - Prayer Times',
+          'Prayer Times',
           style: TextStyle(color: Colors.white),
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.white),
             onPressed: _loadPrayerTimes,
-            tooltip: 'Refresh',
+            tooltip: 'Refresh prayer times',
           ),
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () async => _loadPrayerTimes(),
+        onRefresh: () async {
+          _loadPrayerTimes();
+        },
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // Location & Date
-            _buildLocationCard(),
+            // Location info
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.location_on, color: Colors.blue, size: 20),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Lahore, Pakistan',
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                  const Spacer(),
+                  Text(
+                    DateFormat('EEEE, MMM d').format(DateTime.now()),
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+            
             const SizedBox(height: 24),
             
             // Next Prayer Card
             _buildNextPrayerCard(),
-            const SizedBox(height: 24),
-            
-            // All Prayers
-            _buildPrayerCard('Fajr', '🌅', prayerTimes['fajr']!),
-            const SizedBox(height: 12),
-            _buildPrayerCard('Sunrise', '🌄', prayerTimes['sunrise']!),
-            const SizedBox(height: 12),
-            _buildPrayerCard('Dhuhr', '☀️', prayerTimes['dhuhr']!),
-            const SizedBox(height: 12),
-            _buildPrayerCard('Asr', '🌤️', prayerTimes['asr']!),
-            const SizedBox(height: 12),
-            _buildPrayerCard('Maghrib', '🌆', prayerTimes['maghrib']!),
-            const SizedBox(height: 12),
-            _buildPrayerCard('Isha', '🌙', prayerTimes['isha']!),
             
             const SizedBox(height: 24),
             
-            // Calculation Info
+            // All Prayer Times
+            _buildPrayerTimeCard('Fajr', '🌅', prayerTimes['fajr']!),
+            const SizedBox(height: 12),
+            _buildPrayerTimeCard('Sunrise', '🌄', prayerTimes['sunrise']!),
+            const SizedBox(height: 12),
+            _buildPrayerTimeCard('Dhuhr', '☀️', prayerTimes['dhuhr']!),
+            const SizedBox(height: 12),
+            _buildPrayerTimeCard('Asr', '🌤️', prayerTimes['asr']!),
+            const SizedBox(height: 12),
+            _buildPrayerTimeCard('Maghrib', '🌆', prayerTimes['maghrib']!),
+            const SizedBox(height: 12),
+            _buildPrayerTimeCard('Isha', '🌙', prayerTimes['isha']!),
+            
+            const SizedBox(height: 24),
+            
+            // Calculation method info
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -122,32 +123,6 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-  
-  Widget _buildLocationCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue.withOpacity(0.3)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.location_on, color: Colors.blue, size: 20),
-          const SizedBox(width: 8),
-          const Text(
-            'Lahore, Pakistan',
-            style: TextStyle(color: Colors.white70, fontSize: 14),
-          ),
-          const Spacer(),
-          Text(
-            DateFormat('EEEE, MMM d').format(DateTime.now()),
-            style: const TextStyle(color: Colors.white70, fontSize: 14),
-          ),
-        ],
       ),
     );
   }
@@ -227,7 +202,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
     );
   }
   
-  Widget _buildPrayerCard(String name, String emoji, DateTime time) {
+  Widget _buildPrayerTimeCard(String name, String emoji, DateTime time) {
     final isNext = nextPrayer['name'] == name;
     final formatter = DateFormat('h:mm a');
     
@@ -247,7 +222,10 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
       ),
       child: Row(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 28)),
+          Text(
+            emoji,
+            style: const TextStyle(fontSize: 28),
+          ),
           const SizedBox(width: 16),
           Text(
             name,

@@ -1,185 +1,149 @@
-import 'dart:math';
-import '../models/prayer_log.dart';
+import 'package:adhan/adhan.dart';
+import 'package:intl/intl.dart';
 
 class PrayerTimeService {
-  static PrayerTimes calculatePrayerTimes({
+  /// Calculate accurate prayer times for a given date and location
+  /// 
+  /// Uses University of Islamic Sciences, Karachi method (most accurate for Pakistan)
+  /// Fajr angle: 18°, Isha angle: 18°
+  /// Asr calculation: Hanafi (shadow = 2x object length)
+  static Map<String, DateTime> calculatePrayerTimes({
     required double latitude,
     required double longitude,
-    required DateTime date,
-    CalculationMethod method = CalculationMethod.karachi,
+    DateTime? date,
   }) {
-    return _PrayerCalc(latitude, longitude, date, method).calculate();
-  }
-}
-
-class _PrayerCalc {
-  final double lat;
-  final double lng;
-  final DateTime date;
-  final CalculationMethod method;
-
-  _PrayerCalc(this.lat, this.lng, this.date, this.method);
-
-  PrayerTimes calculate() {
-    final tz = date.timeZoneOffset.inHours +
-        (date.timeZoneOffset.inMinutes % 60) / 60.0;
-    final jd = _jd();
-    final eqt = _eqTime(jd);
-    final dec = _declination(jd);
-    final noon = 12.0 + tz - lng / 15.0 - eqt / 60.0;
+    final now = date ?? DateTime.now();
     
-    final fajr = noon - _hourAngle(dec, -(90 + method.fajrAngle)) / 15.0;
-    final sunrise = noon - _hourAngle(dec, -0.833) / 15.0;
-    final dhuhr = noon;
-    final asrAlt = -_toDeg(atan(1.0 / (1.0 + tan(_toRad((lat - dec).abs())))));
-    final asr = noon + _hourAngle(dec, asrAlt) / 15.0;
-    final maghrib = noon + _hourAngle(dec, -0.833) / 15.0;
-    final isha = method == CalculationMethod.makkah
-        ? maghrib + 1.5
-        : noon + _hourAngle(dec, -(90 + method.ishaAngle)) / 15.0;
-
-    return PrayerTimes(
-      fajr: _dt(fajr),
-      sunrise: _dt(sunrise),
-      dhuhr: _dt(dhuhr),
-      asr: _dt(asr),
-      maghrib: _dt(maghrib),
-      isha: _dt(isha),
+    // Create coordinates for the location
+    final coordinates = Coordinates(latitude, longitude);
+    
+    // Set calculation parameters for Karachi method (most accurate for Pakistan)
+    final params = CalculationMethod.karachi.getParameters();
+    params.madhab = Madhab.hanafi; // Hanafi school for Asr calculation
+    
+    // Calculate prayer times
+    final prayerTimes = PrayerTimes.today(coordinates, params);
+    
+    // Return all prayer times
+    return {
+      'fajr': prayerTimes.fajr,
+      'sunrise': prayerTimes.sunrise,
+      'dhuhr': prayerTimes.dhuhr,
+      'asr': prayerTimes.asr,
+      'maghrib': prayerTimes.maghrib,
+      'isha': prayerTimes.isha,
+    };
+  }
+  
+  /// Get formatted prayer times as strings
+  static Map<String, String> getFormattedPrayerTimes({
+    required double latitude,
+    required double longitude,
+    DateTime? date,
+  }) {
+    final times = calculatePrayerTimes(
+      latitude: latitude,
+      longitude: longitude,
       date: date,
     );
+    
+    final formatter = DateFormat('h:mm a');
+    
+    return {
+      'fajr': formatter.format(times['fajr']!),
+      'sunrise': formatter.format(times['sunrise']!),
+      'dhuhr': formatter.format(times['dhuhr']!),
+      'asr': formatter.format(times['asr']!),
+      'maghrib': formatter.format(times['maghrib']!),
+      'isha': formatter.format(times['isha']!),
+    };
   }
-
-  double _jd() {
-    final y = date.year;
-    final m = date.month;
-    final d = date.day;
-    if (m <= 2) {
-      return (365.25 * (y - 1)).floor() +
-          (30.6001 * (m + 13)).floor() +
-          d + 1720994.5;
-    }
-    return (365.25 * y).floor() +
-        (30.6001 * (m + 1)).floor() +
-        d + 1720994.5;
-  }
-
-  double _eqTime(double jd) {
-    final t = (jd - 2451545.0) / 36525.0;
-    final l0 = 280.46646 + 36000.76983 * t;
-    final m = 357.52911 + 35999.05029 * t;
-    final c = (1.914602 - 0.004817 * t) * sin(_toRad(m)) +
-        (0.019993 - 0.000101 * t) * sin(_toRad(2 * m)) +
-        0.000289 * sin(_toRad(3 * m));
-    final eps = 23.439 - 0.0000004 * t;
-    final y = tan(_toRad(eps / 2)) * tan(_toRad(eps / 2));
-    final e = 0.016708634 - 0.000042037 * t;
-    final eq = y * sin(_toRad(2 * l0)) -
-        2 * e * sin(_toRad(m)) +
-        4 * e * y * sin(_toRad(m)) * cos(_toRad(2 * l0)) -
-        0.5 * y * y * sin(_toRad(4 * l0)) -
-        1.25 * e * e * sin(_toRad(2 * m));
-    return _toDeg(eq) * 4;
-  }
-
-  double _declination(double jd) {
-    final t = (jd - 2451545.0) / 36525.0;
-    final l0 = 280.46646 + 36000.76983 * t;
-    final m = 357.52911 + 35999.05029 * t;
-    final c = (1.914602 - 0.004817 * t) * sin(_toRad(m)) +
-        (0.019993 - 0.000101 * t) * sin(_toRad(2 * m)) +
-        0.000289 * sin(_toRad(3 * m));
-    final lambda = l0 + c;
-    final eps = 23.439 - 0.0000004 * t;
-    return _toDeg(asin(sin(_toRad(eps)) * sin(_toRad(lambda))));
-  }
-
-  double _hourAngle(double dec, double angle) {
-    final cosH = (sin(_toRad(angle)) - sin(_toRad(lat)) * sin(_toRad(dec))) /
-        (cos(_toRad(lat)) * cos(_toRad(dec)));
-    if (cosH > 1.0) return 0.0;
-    if (cosH < -1.0) return 180.0;
-    return _toDeg(acos(cosH));
-  }
-
-  DateTime _dt(double t) {
-    while (t < 0) t += 24;
-    while (t >= 24) t -= 24;
-    final h = t.floor().clamp(0, 23);
-    final m = ((t - h) * 60).round().clamp(0, 59);
-    return DateTime(date.year, date.month, date.day, h, m);
-  }
-
-  double _toRad(double d) => d * pi / 180.0;
-  double _toDeg(double r) => r * 180.0 / pi;
-}
-
-class PrayerTimes {
-  final DateTime fajr;
-  final DateTime sunrise;
-  final DateTime dhuhr;
-  final DateTime asr;
-  final DateTime maghrib;
-  final DateTime isha;
-  final DateTime date;
-
-  PrayerTimes({
-    required this.fajr,
-    required this.sunrise,
-    required this.dhuhr,
-    required this.asr,
-    required this.maghrib,
-    required this.isha,
-    required this.date,
-  });
-
-  DateTime? getNextPrayer() {
+  
+  /// Get the next prayer name and time
+  static Map<String, dynamic> getNextPrayer({
+    required double latitude,
+    required double longitude,
+  }) {
+    final times = calculatePrayerTimes(
+      latitude: latitude,
+      longitude: longitude,
+    );
+    
     final now = DateTime.now();
-    for (final p in [fajr, dhuhr, asr, maghrib, isha]) {
-      if (p.isAfter(now)) return p;
+    
+    // Check each prayer in order
+    final prayers = [
+      {'name': 'Fajr', 'time': times['fajr']!},
+      {'name': 'Sunrise', 'time': times['sunrise']!},
+      {'name': 'Dhuhr', 'time': times['dhuhr']!},
+      {'name': 'Asr', 'time': times['asr']!},
+      {'name': 'Maghrib', 'time': times['maghrib']!},
+      {'name': 'Isha', 'time': times['isha']!},
+    ];
+    
+    // Find the next prayer
+    for (final prayer in prayers) {
+      if (now.isBefore(prayer['time'] as DateTime)) {
+        return {
+          'name': prayer['name'],
+          'time': prayer['time'],
+          'timeRemaining': (prayer['time'] as DateTime).difference(now),
+        };
+      }
     }
-    return null;
+    
+    // If all prayers passed, next is Fajr tomorrow
+    final tomorrowTimes = calculatePrayerTimes(
+      latitude: latitude,
+      longitude: longitude,
+      date: DateTime.now().add(const Duration(days: 1)),
+    );
+    
+    return {
+      'name': 'Fajr',
+      'time': tomorrowTimes['fajr']!,
+      'timeRemaining': tomorrowTimes['fajr']!.difference(now),
+    };
   }
-
-  PrayerType? getNextPrayerType() {
-    final next = getNextPrayer();
-    if (next == null) return null;
-    if (next == fajr) return PrayerType.fajr;
-    if (next == dhuhr) return PrayerType.dhuhr;
-    if (next == asr) return PrayerType.asr;
-    if (next == maghrib) return PrayerType.maghrib;
-    if (next == isha) return PrayerType.isha;
-    return null;
+  
+  /// Format time remaining as "2h 15m" or "45m"
+  static String formatTimeRemaining(Duration duration) {
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes % 60;
+    
+    if (hours > 0) {
+      return '${hours}h ${minutes}m';
+    } else {
+      return '${minutes}m';
+    }
   }
-
-  Map<PrayerType, DateTime> getAllPrayers() => {
-    PrayerType.fajr: fajr,
-    PrayerType.dhuhr: dhuhr,
-    PrayerType.asr: asr,
-    PrayerType.maghrib: maghrib,
-    PrayerType.isha: isha,
-  };
+  
+  /// Check if it's currently prayer time (within 15 minutes)
+  static bool isCurrentlyPrayerTime({
+    required String prayerName,
+    required DateTime prayerTime,
+  }) {
+    final now = DateTime.now();
+    final difference = now.difference(prayerTime).abs();
+    return difference.inMinutes <= 15;
+  }
 }
 
-enum CalculationMethod { karachi, isna, mwl, makkah, egypt }
-
-extension CalculationMethodExtension on CalculationMethod {
-  double get fajrAngle {
-    switch (this) {
-      case CalculationMethod.karachi: return 18.0;
-      case CalculationMethod.isna: return 15.0;
-      case CalculationMethod.mwl: return 18.0;
-      case CalculationMethod.makkah: return 18.5;
-      case CalculationMethod.egypt: return 19.5;
-    }
-  }
-
-  double get ishaAngle {
-    switch (this) {
-      case CalculationMethod.karachi: return 18.0;
-      case CalculationMethod.isna: return 15.0;
-      case CalculationMethod.mwl: return 17.0;
-      case CalculationMethod.makkah: return 90.0;
-      case CalculationMethod.egypt: return 17.5;
-    }
-  }
-}
+// Example usage for Lahore:
+// 
+// void main() {
+//   final times = PrayerTimeService.calculatePrayerTimes(
+//     latitude: 31.5204,
+//     longitude: 74.3587,
+//   );
+//   
+//   print('Fajr: ${DateFormat('h:mm a').format(times['fajr']!)}');
+//   print('Dhuhr: ${DateFormat('h:mm a').format(times['dhuhr']!)}');
+//   
+//   final next = PrayerTimeService.getNextPrayer(
+//     latitude: 31.5204,
+//     longitude: 74.3587,
+//   );
+//   
+//   print('Next prayer: ${next['name']} in ${PrayerTimeService.formatTimeRemaining(next['timeRemaining'])}');
+// }
