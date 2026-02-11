@@ -1,0 +1,52 @@
+name: faze
+description: Personal Wellness & Productivity Companion
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # State Management
+  flutter_riverpod: ^2.5.1
+  
+  # Local Database
+  isar: ^3.1.0+1
+  isar_flutter_libs: ^3.1.0+1
+  path_provider: ^2.1.4
+  
+  # Notifications
+  flutter_local_notifications: ^17.2.3
+  timezone: ^0.9.4
+  
+  # Location
+  geolocator: ^13.0.2
+  geocoding: ^3.0.0
+  
+  # UI
+  google_fonts: ^6.2.1
+  flutter_slidable: ^3.1.1
+  intl: ^0.19.0
+  fl_chart: ^0.69.0
+  
+  # Utils
+  uuid: ^4.5.1
+  shared_preferences: ^2.3.3
+  permission_handler: ^11.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.13
+  isar_generator: ^3.1.0+1
+  flutter_launcher_icons: ^0.14.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/sounds/
