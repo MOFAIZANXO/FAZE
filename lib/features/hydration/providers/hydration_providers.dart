@@ -53,6 +53,12 @@ class HydrationNotifier extends AsyncNotifier<HydrationSummary> {
     
     ref.invalidateSelf();
   }
+
+  /// Set exact number of glasses for today
+  Future<void> setGlasses(int count) async {
+    await HydrationService.setGlassesForToday(count);
+    ref.invalidateSelf();
+  }
 }
 
 final hydrationNotifierProvider =

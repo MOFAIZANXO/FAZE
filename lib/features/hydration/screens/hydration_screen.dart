@@ -1,14 +1,105 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/hydration_providers.dart';
 import '../services/hydration_service.dart';
 
-class HydrationScreen extends ConsumerWidget {
+class HydrationScreen extends ConsumerStatefulWidget {
   const HydrationScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HydrationScreen> createState() => _HydrationScreenState();
+}
+
+class _HydrationScreenState extends ConsumerState<HydrationScreen>
+    with TickerProviderStateMixin {
+  late AnimationController _waveController;
+  late Animation<double> _waveAnimation;
+  late AnimationController _buttonController;
+  late Animation<double> _buttonScale;
+
+  @override
+  void initState() {
+    super.initState();
+    _waveController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat();
+    _waveAnimation = Tween<double>(begin: 0, end: 1).animate(_waveController);
+
+    _buttonController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 150),
+    );
+    _buttonScale = Tween<double>(begin: 1.0, end: 0.9).animate(
+      CurvedAnimation(parent: _buttonController, curve: Curves.easeOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _waveController.dispose();
+    _buttonController.dispose();
+    super.dispose();
+  }
+
+  void _showCelebration(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => Center(
+        child: TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0.0, end: 1.0),
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.elasticOut,
+          builder: (context, value, child) {
+            return Transform.scale(
+              scale: value,
+              child: Container(
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade700,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      '🎉',
+                      style: TextStyle(fontSize: 64),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Daily Goal Reached!',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Great job staying hydrated!',
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+
+    // Auto-dismiss after 2 seconds
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted && Navigator.canPop(context)) Navigator.pop(context);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final summaryAsync = ref.watch(hydrationNotifierProvider);
 
     return Scaffold(
@@ -37,9 +128,9 @@ class HydrationScreen extends ConsumerWidget {
             children: [
               const Icon(Icons.error_outline, color: Colors.red, size: 48),
               const SizedBox(height: 16),
-              Text(
+              const Text(
                 'Error loading hydration data',
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: Colors.white),
               ),
               const SizedBox(height: 8),
               Text(
@@ -75,10 +166,10 @@ class HydrationScreen extends ConsumerWidget {
           const SizedBox(height: 32),
           _buildControls(context, ref, summary),
           const SizedBox(height: 32),
-          _buildGlassRow(summary),
-          const SizedBox(height: 32),
+          _buildGlassRow(summary, ref),
+          const SizedBox(height: 40),
           _buildStatsRow(summary),
-          const SizedBox(height: 32),
+          const SizedBox(height: 40),
           _buildWeeklyHistory(ref),
         ],
       ),
@@ -89,32 +180,74 @@ class HydrationScreen extends ConsumerWidget {
     return Stack(
       alignment: Alignment.center,
       children: [
+        // Outer glow
+        Container(
+          width: 220,
+          height: 220,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+          ),
+        ),
+
+        // Animated water fill
         SizedBox(
           width: 200,
           height: 200,
-          child: CircularProgressIndicator(
-            value: summary.percentComplete,
-            strokeWidth: 12,
-            backgroundColor: Colors.cyan.withOpacity(0.2),
-            valueColor: const AlwaysStoppedAnimation<Color>(Colors.cyan),
+          child: ClipOval(
+            child: Stack(
+              children: [
+                // Dark background
+                Container(
+                  color: const Color(0xFF0A1628),
+                ),
+
+                // Water fill with wave
+                AnimatedBuilder(
+                  animation: _waveAnimation,
+                  builder: (context, child) {
+                    return CustomPaint(
+                      painter: WaterWavePainter(
+                        fillPercent: summary.percentComplete,
+                        wavePhase: _waveAnimation.value,
+                      ),
+                      size: const Size(200, 200),
+                    );
+                  },
+                ),
+
+                // Text overlay
+                Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${summary.currentGlasses}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 52,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'of ${summary.targetGlasses}',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const Text(
+                        'glasses',
+                        style: TextStyle(
+                          color: Colors.white54,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        Column(
-          children: [
-            const Text('💧', style: TextStyle(fontSize: 40)),
-            Text(
-              '${summary.currentGlasses}',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 52,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              'of ${summary.targetGlasses} glasses',
-              style: const TextStyle(color: Colors.white60, fontSize: 14),
-            ),
-          ],
         ),
       ],
     );
@@ -128,7 +261,6 @@ class HydrationScreen extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Remove button - only enabled if > 0 glasses
         IconButton(
           onPressed: summary.currentGlasses > 0
               ? () async {
@@ -136,68 +268,75 @@ class HydrationScreen extends ConsumerWidget {
                   try {
                     await ref.read(hydrationNotifierProvider.notifier).removeGlass();
                   } catch (e) {
-                    // Silently ignore errors (already at 0)
-                    debugPrint('Remove glass error: $e');
+                    debugPrint('Remove glass error: $e'); // Silent error
                   }
                 }
               : null,
           icon: const Icon(Icons.remove_circle_outline),
           iconSize: 40,
-          color: summary.currentGlasses > 0 
-              ? Colors.white54 
-              : Colors.white24,
+          color: summary.currentGlasses > 0 ? Colors.white54 : Colors.white24,
           disabledColor: Colors.white24,
         ),
         const SizedBox(width: 24),
 
         // Add button
         GestureDetector(
-          onTap: () async {
+          onTapDown: (_) => _buttonController.forward(),
+          onTapUp: (_) async {
+            _buttonController.reverse();
             HapticFeedback.mediumImpact();
-            try {
-              await ref.read(hydrationNotifierProvider.notifier).addGlass();
-            } catch (e) {
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Error adding glass: $e'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
+
+            final oldGlasses = summary.currentGlasses;
+            await ref.read(hydrationNotifierProvider.notifier).addGlass();
+
+            // Check if goal just reached
+            if (oldGlasses < summary.targetGlasses &&
+                (oldGlasses + 1) >= summary.targetGlasses) {
+              await Future.delayed(const Duration(milliseconds: 300));
+              if (mounted) _showCelebration(context);
             }
           },
-          child: Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [Colors.cyan.shade400, Colors.cyan.shade700],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.cyan.withOpacity(0.4),
-                  blurRadius: 20,
-                  spreadRadius: 2,
+          onTapCancel: () => _buttonController.reverse(),
+          child: ScaleTransition(
+            scale: _buttonScale,
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: summary.goalReached
+                      ? [Colors.green.shade400, Colors.green.shade700]
+                      : [Colors.cyan.shade300, Colors.cyan.shade700],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-              ],
-            ),
-            child: const Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('💧', style: TextStyle(fontSize: 32)),
-                Text(
-                  '+1 Glass',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
+                boxShadow: [
+                  BoxShadow(
+                    color: (summary.goalReached ? Colors.green : Colors.cyan)
+                        .withOpacity(0.5),
+                    blurRadius: 25,
+                    spreadRadius: 3,
                   ),
-                ),
-              ],
+                ],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    summary.goalReached ? '🎉' : '💧',
+                    style: const TextStyle(fontSize: 36),
+                  ),
+                  Text(
+                    summary.goalReached ? 'Done!' : '+1',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -207,19 +346,27 @@ class HydrationScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildGlassRow(HydrationSummary summary) {
+  Widget _buildGlassRow(HydrationSummary summary, WidgetRef ref) {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       alignment: WrapAlignment.center,
       children: List.generate(
         summary.targetGlasses,
-        (i) => Icon(
-          i < summary.currentGlasses
-              ? Icons.water_drop
-              : Icons.water_drop_outlined,
-          color: i < summary.currentGlasses ? Colors.cyan : Colors.white24,
-          size: 32,
+        (i) => _AnimatedGlass(
+          index: i,
+          isFilled: i < summary.currentGlasses,
+          onTap: () async {
+            HapticFeedback.lightImpact();
+            final newCount = i + 1;
+            await ref.read(hydrationNotifierProvider.notifier).setGlasses(newCount);
+            
+            // Celebration check for manual setting
+            if (i < summary.targetGlasses && newCount >= summary.targetGlasses) {
+               await Future.delayed(const Duration(milliseconds: 300));
+               if (mounted) _showCelebration(context);
+            }
+          },
         ),
       ),
     );
@@ -246,7 +393,7 @@ class HydrationScreen extends ConsumerWidget {
         const SizedBox(width: 12),
         Expanded(
           child: _statCard(
-            '${summary.weeklyAverage.toStringAsFixed(1)}',
+            summary.weeklyAverage.toStringAsFixed(1),
             '7-day Avg',
             Colors.blue,
           ),
@@ -333,10 +480,25 @@ class HydrationScreen extends ConsumerWidget {
                         width: 28,
                         height: (60 * pct.clamp(0.0, 1.0)).toDouble(),
                         decoration: BoxDecoration(
-                          color: pct >= 1.0
-                              ? Colors.cyan
-                              : Colors.cyan.withOpacity(0.5),
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: pct >= 1.0
+                                ? [Colors.cyan.shade300, Colors.cyan.shade700]
+                                : [
+                                    Colors.cyan.withOpacity(0.4),
+                                    Colors.cyan.withOpacity(0.6),
+                                  ],
+                          ),
                           borderRadius: BorderRadius.circular(6),
+                          boxShadow: pct >= 1.0
+                              ? [
+                                  BoxShadow(
+                                    color: Colors.cyan.withOpacity(0.3),
+                                    blurRadius: 8,
+                                  ),
+                                ]
+                              : null,
                         ),
                       ),
                     ),
@@ -397,6 +559,143 @@ class HydrationScreen extends ConsumerWidget {
               ),
             )),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class WaterWavePainter extends CustomPainter {
+  final double fillPercent;
+  final double wavePhase;
+
+  WaterWavePainter({
+    required this.fillPercent,
+    required this.wavePhase,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final waterPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Colors.cyan.withOpacity(0.7),
+          Colors.cyan.shade700,
+        ],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+
+    final path = Path();
+    final waterLevel = size.height * (1 - fillPercent);
+
+    // Start path
+    path.moveTo(0, waterLevel);
+
+    // Create wave
+    for (double x = 0; x <= size.width; x += 1) {
+      final y = waterLevel +
+          8 * sin((x / size.width * 2 * pi) + (wavePhase * 2 * pi));
+      path.lineTo(x, y);
+    }
+
+    // Complete path
+    path.lineTo(size.width, size.height);
+    path.lineTo(0, size.height);
+    path.close();
+
+    canvas.drawPath(path, waterPaint);
+
+    // Add wave shimmer
+    final shimmerPaint = Paint()
+      ..color = Colors.white.withOpacity(0.2)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+
+    final shimmerPath = Path();
+    shimmerPath.moveTo(0, waterLevel);
+    for (double x = 0; x <= size.width; x += 1) {
+      final y = waterLevel +
+          8 * sin((x / size.width * 2 * pi) + (wavePhase * 2 * pi));
+      shimmerPath.lineTo(x, y);
+    }
+    canvas.drawPath(shimmerPath, shimmerPaint);
+  }
+
+  @override
+  bool shouldRepaint(WaterWavePainter old) =>
+      old.fillPercent != fillPercent || old.wavePhase != wavePhase;
+}
+
+class _AnimatedGlass extends StatefulWidget {
+  final int index;
+  final bool isFilled;
+  final VoidCallback onTap;
+
+  const _AnimatedGlass({
+    required this.index,
+    required this.isFilled,
+    required this.onTap,
+  });
+
+  @override
+  State<_AnimatedGlass> createState() => _AnimatedGlassState();
+}
+
+class _AnimatedGlassState extends State<_AnimatedGlass>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 150),
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.85).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => _controller.forward(),
+      onTapUp: (_) {
+        _controller.reverse();
+        widget.onTap();
+      },
+      onTapCancel: () => _controller.reverse(),
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.elasticOut,
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: widget.isFilled
+                ? Colors.cyan.withOpacity(0.2)
+                : Colors.transparent,
+            border: Border.all(
+              color: widget.isFilled ? Colors.cyan : Colors.white24,
+              width: 1.5,
+            ),
+          ),
+          child: Icon(
+            widget.isFilled ? Icons.water_drop : Icons.water_drop_outlined,
+            color: widget.isFilled ? Colors.cyan : Colors.white24,
+            size: 18,
+          ),
         ),
       ),
     );

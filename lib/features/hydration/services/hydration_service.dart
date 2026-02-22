@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 import '../../../data/services/database_service.dart';
 import '../../../data/models/hydration_log.dart';  // ✅ CORRECT PATH (3 levels up, not 4)
@@ -71,14 +72,26 @@ class HydrationService {
 
   /// Remove last glass (undo)
   static Future<void> removeLastGlass() async {
-    final logs = await getTodayLogs();
-    if (logs.isEmpty) return;
+    try {
+      final logs = await getTodayLogs();
+      if (logs.isEmpty) {
+        debugPrint('HydrationService.removeLastGlass: No logs found, returning.');
+        return;
+      }
 
-    final lastLog = logs.first; // Already sorted desc
-
-    await _db.writeTxn(() async {
-      await _db.hydrationLogs.delete(lastLog.id);
-    });
+      final lastLog = logs.first;
+      
+      await _db.writeTxn(() async {
+        final success = await _db.hydrationLogs.delete(lastLog.id);
+        if (success) {
+          debugPrint('HydrationService: Deleted log ${lastLog.id}');
+        } else {
+          debugPrint('HydrationService: Log ${lastLog.id} not found in DB during deletion');
+        }
+      });
+    } catch (e) {
+      debugPrint('HydrationService.removeLastGlass error: $e');
+    }
   }
 
   /// Set exact number of glasses for today
