@@ -17,7 +17,9 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  late DashboardData _data;
+  DashboardData? _data;
+  bool _isLoading = true;
+  String? _error;
 
   @override
   void initState() {
@@ -25,10 +27,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _loadData();
   }
 
-  void _loadData() {
+  Future<void> _loadData() async {
     setState(() {
-      _data = DashboardService.getDashboardData();
+      _isLoading = true;
+      _error = null;
     });
+
+    try {
+      final data = await DashboardService.getDashboardData();
+      setState(() {
+        _data = data;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+      print('Dashboard load error: $e');
+    }
   }
 
   @override
@@ -56,96 +73,131 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () async => _loadData(),
-        child: Stack(
+        onRefresh: _loadData,
+        child: _buildBody(theme),
+      ),
+    );
+  }
+
+  Widget _buildBody(ThemeData theme) {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.blue),
+      );
+    }
+
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // ✅ FIXED: Clean background glow blobs (no broken SelectionArea)
-            Positioned(
-              top: -100,
-              right: -50,
-              child: Container(
-                width: 300,
-                height: 300,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      AppColors.primaryBlue.withOpacity(0.08),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
+            const Icon(Icons.error_outline, color: Colors.red, size: 48),
+            const SizedBox(height: 16),
+            Text(
+              'Failed to load dashboard',
+              style: const TextStyle(color: Colors.white, fontSize: 18),
             ),
-            Positioned(
-              top: 200,
-              left: -100,
-              child: Container(
-                width: 400,
-                height: 400,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      AppColors.primaryBlue.withOpacity(0.06),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
+            const SizedBox(height: 8),
+            Text(
+              _error!,
+              style: const TextStyle(color: Colors.white54, fontSize: 12),
+              textAlign: TextAlign.center,
             ),
-            Positioned(
-              bottom: 100,
-              right: -150,
-              child: Container(
-                width: 500,
-                height: 500,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      AppColors.deepBlue.withOpacity(0.05),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            // ── Main Content ──────────────────────────────
-            SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Greeting
-                  _buildGreeting(theme),
-                  const SizedBox(height: 32),
-
-                  // Quick Stats Row
-                  QuickStatsRow(data: _data),
-                  const SizedBox(height: 32),
-
-                  // Overview title
-                  Text(
-                    "Today's Overview",
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Widget Grid
-                  _buildOverviewGrid(),
-                ],
-              ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _loadData,
+              child: const Text('Retry'),
             ),
           ],
         ),
-      ),
+      );
+    }
+
+    if (_data == null) {
+      return const Center(
+        child: Text('No data', style: TextStyle(color: Colors.white)),
+      );
+    }
+
+    return Stack(
+      children: [
+        // Background glows
+        Positioned(
+          top: -100,
+          right: -50,
+          child: Container(
+            width: 300,
+            height: 300,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  AppColors.primaryBlue.withOpacity(0.08),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          top: 200,
+          left: -100,
+          child: Container(
+            width: 400,
+            height: 400,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  AppColors.primaryBlue.withOpacity(0.06),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 100,
+          right: -150,
+          child: Container(
+            width: 500,
+            height: 500,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  AppColors.deepBlue.withOpacity(0.05),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildGreeting(theme),
+              const SizedBox(height: 32),
+              QuickStatsRow(data: _data!),
+              const SizedBox(height: 32),
+              Text(
+                "Today's Overview",
+                style: theme.textTheme.titleLarge?.copyWith(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildOverviewGrid(),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -192,25 +244,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
             mainAxisSpacing: 16,
             childAspectRatio: 1.5,
             children: [
-              DashboardPrayerWidgetCard(data: _data.prayer),
-              DashboardHydrationWidgetCard(data: _data.hydration),
-              DashboardTasksWidgetCard(data: _data.tasks),
-              DashboardJournalWidgetCard(data: _data.journal),
-              DashboardExerciseWidgetCard(data: _data.exercise),
+              DashboardPrayerWidgetCard(data: _data!.prayer),
+              DashboardHydrationWidgetCard(data: _data!.hydration),
+              DashboardTasksWidgetCard(data: _data!.tasks),
+              DashboardJournalWidgetCard(data: _data!.journal),
+              DashboardExerciseWidgetCard(data: _data!.exercise),
             ],
           );
         } else {
           return Column(
             children: [
-              DashboardPrayerWidgetCard(data: _data.prayer),
+              DashboardPrayerWidgetCard(data: _data!.prayer),
               const SizedBox(height: 16),
-              DashboardHydrationWidgetCard(data: _data.hydration),
+              DashboardHydrationWidgetCard(data: _data!.hydration),
               const SizedBox(height: 16),
-              DashboardTasksWidgetCard(data: _data.tasks),
+              DashboardTasksWidgetCard(data: _data!.tasks),
               const SizedBox(height: 16),
-              DashboardJournalWidgetCard(data: _data.journal),
+              DashboardJournalWidgetCard(data: _data!.journal),
               const SizedBox(height: 16),
-              DashboardExerciseWidgetCard(data: _data.exercise),
+              DashboardExerciseWidgetCard(data: _data!.exercise),
             ],
           );
         }

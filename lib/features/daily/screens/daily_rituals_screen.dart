@@ -43,11 +43,7 @@ class DailyRitualsScreen extends StatelessWidget {
             'Hydration Tracker',
             'Track your daily water intake',
             Icons.water_drop,
-            () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Hydration tracker coming soon!')),
-              );
-            },
+            () => context.push('/hydration'),  // ✅ FIXED: Navigate to hydration screen
           ),
           const SizedBox(height: 16),
           _buildFeatureCard(

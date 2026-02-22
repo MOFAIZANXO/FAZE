@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/dashboard/screens/dashboard_screen.dart';
 import '../../features/daily/screens/daily_rituals_screen.dart';
 import '../../features/productivity/screens/productivity_screen.dart';
+import '../../features/hydration/screens/hydration_screen.dart';
 import '../../features/journal/screens/journal_screen.dart';
 import '../../features/analytics/screens/analytics_screen.dart';
 import '../../features/prayers/screens/prayer_times_screen.dart';
@@ -94,6 +95,13 @@ class AppRouter {
         name: 'prayer-times',
         pageBuilder: (context, state) => const MaterialPage(
           child: PrayerTimesScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/hydration',
+        name: 'hydration',
+        pageBuilder: (context, state) => const MaterialPage(
+          child: HydrationScreen(),
         ),
       ),
     ],

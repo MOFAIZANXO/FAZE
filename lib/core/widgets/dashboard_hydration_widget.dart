@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../theme/app_theme.dart';
 import '../contracts/widget_contracts.dart';
 
@@ -19,9 +20,7 @@ class DashboardHydrationWidgetCard extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         Feedback.forTap(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Hydration screen coming soon!')),
-        );
+        context.push('/hydration');  // ✅ FIXED: Navigate to hydration screen
       },
       child: Container(
         padding: const EdgeInsets.all(16),

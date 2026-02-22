@@ -1,5 +1,6 @@
 import '../../../core/contracts/widget_contracts.dart';
 import '../../../data/services/prayer_time_service.dart';
+import '../../../features/hydration/services/hydration_service.dart';
 
 /// Dashboard Service
 /// 
@@ -8,10 +9,10 @@ import '../../../data/services/prayer_time_service.dart';
 class DashboardService {
   
   /// Get complete dashboard data
-  static DashboardData getDashboardData() {
+  static Future<DashboardData> getDashboardData() async {
     return DashboardData(
       prayer: _getPrayerWidgetData(),
-      hydration: _getHydrationWidgetData(),
+      hydration: await _getHydrationWidgetData(),  // ✅ Now async
       tasks: _getTasksWidgetData(),
       journal: _getJournalWidgetData(),
       exercise: _getExerciseWidgetData(),
@@ -39,15 +40,27 @@ class DashboardService {
     );
   }
   
-  /// Hydration widget data (placeholder - will be real when we build hydration)
-  static DashboardHydrationWidget _getHydrationWidgetData() {
-    // TODO: Get from HydrationService when built
-    return const DashboardHydrationWidget(
-      currentGlasses: 3,
-      targetGlasses: 8,
-      percentComplete: 0.375,
-      lastDrinkTime: null,
-    );
+  /// Hydration widget data (NOW USES REAL DATA)
+  static Future<DashboardHydrationWidget> _getHydrationWidgetData() async {
+    try {
+      final summary = await HydrationService.getSummary(targetGlasses: 8);
+      
+      return DashboardHydrationWidget(
+        currentGlasses: summary.currentGlasses,
+        targetGlasses: summary.targetGlasses,
+        percentComplete: summary.percentComplete,
+        lastDrinkTime: summary.lastDrinkTime,
+      );
+    } catch (e) {
+      // Fallback if hydration service fails
+      print('Hydration service error: $e');
+      return const DashboardHydrationWidget(
+        currentGlasses: 0,
+        targetGlasses: 8,
+        percentComplete: 0,
+        lastDrinkTime: null,
+      );
+    }
   }
   
   /// Tasks widget data (placeholder - will be real when we build tasks)
