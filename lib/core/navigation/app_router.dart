@@ -30,8 +30,9 @@ class AppRouter {
               GoRoute(
                 path: '/',
                 name: 'dashboard',
-                pageBuilder: (context, state) => const NoTransitionPage(
-                  child: DashboardScreen(),
+                pageBuilder: (context, state) => _fadeSlideTransition(
+                  state: state,
+                  child: const DashboardScreen(),
                 ),
               ),
             ],
@@ -43,8 +44,9 @@ class AppRouter {
               GoRoute(
                 path: '/daily',
                 name: 'daily',
-                pageBuilder: (context, state) => const NoTransitionPage(
-                  child: DailyRitualsScreen(),
+                pageBuilder: (context, state) => _fadeSlideTransition(
+                  state: state,
+                  child: const DailyRitualsScreen(),
                 ),
               ),
             ],
@@ -56,8 +58,9 @@ class AppRouter {
               GoRoute(
                 path: '/productivity',
                 name: 'productivity',
-                pageBuilder: (context, state) => const NoTransitionPage(
-                  child: ProductivityScreen(),
+                pageBuilder: (context, state) => _fadeSlideTransition(
+                  state: state,
+                  child: const ProductivityScreen(),
                 ),
               ),
             ],
@@ -69,8 +72,9 @@ class AppRouter {
               GoRoute(
                 path: '/journal',
                 name: 'journal',
-                pageBuilder: (context, state) => const NoTransitionPage(
-                  child: JournalScreen(),
+                pageBuilder: (context, state) => _fadeSlideTransition(
+                  state: state,
+                  child: const JournalScreen(),
                 ),
               ),
             ],
@@ -82,8 +86,9 @@ class AppRouter {
               GoRoute(
                 path: '/analytics',
                 name: 'analytics',
-                pageBuilder: (context, state) => const NoTransitionPage(
-                  child: AnalyticsScreen(),
+                pageBuilder: (context, state) => _fadeSlideTransition(
+                  state: state,
+                  child: const AnalyticsScreen(),
                 ),
               ),
             ],
@@ -95,19 +100,44 @@ class AppRouter {
       GoRoute(
         path: '/prayer-times',
         name: 'prayer-times',
-        pageBuilder: (context, state) => const MaterialPage(
-          child: PrayerTimesScreen(),
+        pageBuilder: (context, state) => _fadeSlideTransition(
+          state: state,
+          child: const PrayerTimesScreen(),
         ),
       ),
       GoRoute(
         path: '/hydration',
         name: 'hydration',
-        pageBuilder: (context, state) => const MaterialPage(
-          child: HydrationScreen(),
+        pageBuilder: (context, state) => _fadeSlideTransition(
+          state: state,
+          child: const HydrationScreen(),
         ),
       ),
     ],
   );
+
+  static CustomTransitionPage _fadeSlideTransition({
+    required GoRouterState state,
+    required Widget child,
+  }) {
+    return CustomTransitionPage<void>(
+      key: state.pageKey,
+      child: child,
+      transitionDuration: const Duration(milliseconds: 300),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        return FadeTransition(
+          opacity: CurveTween(curve: Curves.easeIn).animate(animation),
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0.05),
+              end: Offset.zero,
+            ).animate(CurveTween(curve: Curves.easeOutCubic).animate(animation)),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
 }
 
 /// Scaffold with Bottom Navigation

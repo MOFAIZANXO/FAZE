@@ -191,29 +191,35 @@ class _HydrationScreenState extends ConsumerState<HydrationScreen>
     WidgetRef ref,
     HydrationSummary summary,
   ) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _buildProgressSquare(summary),
-          const SizedBox(height: 24),
-          _buildControls(context, ref, summary),
-          const SizedBox(height: 32),
-          Text(
-            summary.motivationMessage,
-            style: TextStyle(
-              color: const Color(0xFF4FC3F7).withOpacity(0.8),
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              fontStyle: FontStyle.italic,
-            ),
-            textAlign: TextAlign.center,
+    return Hero(
+      tag: 'hero-hydration',
+      child: Material(
+        color: Colors.transparent,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _buildProgressSquare(summary),
+              const SizedBox(height: 24),
+              _buildControls(context, ref, summary),
+              const SizedBox(height: 32),
+              Text(
+                summary.motivationMessage,
+                style: TextStyle(
+                  color: const Color(0xFF4FC3F7).withOpacity(0.8),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  fontStyle: FontStyle.italic,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 40),
+              _buildWeeklyHistory(ref),
+              const SizedBox(height: 32),
+            ],
           ),
-          const SizedBox(height: 40),
-          _buildWeeklyHistory(ref),
-          const SizedBox(height: 32),
-        ],
+        ),
       ),
     );
   }

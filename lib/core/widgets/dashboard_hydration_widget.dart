@@ -53,137 +53,140 @@ class _DashboardHydrationWidgetCardState extends ConsumerState<DashboardHydratio
     final targetGlasses = summary?.targetGlasses ?? widget.data.targetGlasses;
     final percent = summary?.percentComplete ?? widget.data.percentComplete;
 
-    return Container(
-      height: 160,
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border, width: 1),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Stack(
-          children: [
-            // 1. BACKGROUND: Animated Water Wave
-            Positioned.fill(
-              child: AnimatedBuilder(
-                animation: _waveController,
-                builder: (context, child) {
-                  return CustomPaint(
-                    painter: WaterWavePainter(
-                      fillPercent: percent,
-                      wavePhase: _waveController.value,
-                      colors: [
-                        AppColors.primaryBlue.withOpacity(0.08),
-                        AppColors.primaryBlue.withOpacity(0.2),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            // 2. MIDDLE: Navigation Layer (InkWell that ignores children if they handle gestures)
-            // Using Material + InkWell here for the "main" card tap
-            Positioned.fill(
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () {
-                    Feedback.forTap(context);
-                    context.push('/hydration');
+    return Hero(
+      tag: 'hero-hydration',
+      child: Container(
+        height: 160,
+        decoration: BoxDecoration(
+          color: AppColors.cardBackground,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border, width: 1),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Stack(
+            children: [
+              // 1. BACKGROUND: Animated Water Wave
+              Positioned.fill(
+                child: AnimatedBuilder(
+                  animation: _waveController,
+                  builder: (context, child) {
+                    return CustomPaint(
+                      painter: WaterWavePainter(
+                        fillPercent: percent,
+                        wavePhase: _waveController.value,
+                        colors: [
+                          AppColors.primaryBlue.withOpacity(0.08),
+                          AppColors.primaryBlue.withOpacity(0.2),
+                        ],
+                      ),
+                    );
                   },
                 ),
               ),
-            ),
 
-            // 3. TOP: Content & Controls (Non-greedy gesture handling)
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header (Non-interactive)
-                  IgnorePointer(
-                    child: Row(
-                      children: [
-                        const Icon(Icons.water_drop, color: AppColors.primaryBlue, size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Hydration',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          '$currentGlasses/$targetGlasses glasses',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
+              // 2. MIDDLE: Navigation Layer (InkWell that ignores children if they handle gestures)
+              // Using Material + InkWell here for the "main" card tap
+              Positioned.fill(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      Feedback.forTap(context);
+                      context.push('/hydration');
+                    },
                   ),
-                  const Spacer(),
-                  
-                  // Progress and Interactive Controls
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Left side: Progress % (Non-interactive)
-                      IgnorePointer(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${(percent * 100).toInt()}%',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 32,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              'Complete',
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: AppColors.textTertiary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      
-                      // Right side: Quick Controls (These MUST be on top to catch taps)
-                      Row(
+                ),
+              ),
+
+              // 3. TOP: Content & Controls (Non-greedy gesture handling)
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header (Non-interactive)
+                    IgnorePointer(
+                      child: Row(
                         children: [
-                          _ControlButton(
-                            icon: Icons.remove,
-                            onPressed: currentGlasses > 0 
-                              ? () {
-                                  // Use read for the callback to avoid rebuilding during build
-                                  ref.read(hydrationNotifierProvider.notifier).removeGlass();
-                                }
-                              : null,
+                          const Icon(Icons.water_drop, color: AppColors.primaryBlue, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Hydration',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                          const SizedBox(width: 12),
-                          _ControlButton(
-                            icon: Icons.add,
-                            isPrimary: true,
-                            onPressed: () {
-                              ref.read(hydrationNotifierProvider.notifier).addGlass();
-                            },
+                          const Spacer(),
+                          Text(
+                            '$currentGlasses/$targetGlasses glasses',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+                    const Spacer(),
+                    
+                    // Progress and Interactive Controls
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Left side: Progress % (Non-interactive)
+                        IgnorePointer(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${(percent * 100).toInt()}%',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                'Complete',
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  color: AppColors.textTertiary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        
+                        // Right side: Quick Controls (These MUST be on top to catch taps)
+                        Row(
+                          children: [
+                            _ControlButton(
+                              icon: Icons.remove,
+                              onPressed: currentGlasses > 0 
+                                ? () {
+                                    // Use read for the callback to avoid rebuilding during build
+                                    ref.read(hydrationNotifierProvider.notifier).removeGlass();
+                                  }
+                                : null,
+                            ),
+                            const SizedBox(width: 12),
+                            _ControlButton(
+                              icon: Icons.add,
+                              isPrimary: true,
+                              onPressed: () {
+                                ref.read(hydrationNotifierProvider.notifier).addGlass();
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

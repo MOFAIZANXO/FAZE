@@ -60,90 +60,96 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          _loadPrayerTimes();
-        },
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            // Location info
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: AppColors.cardBackground,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.border, width: 1),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.location_on, color: AppColors.primaryBlue, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Lahore, Pakistan',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+      body: Hero(
+        tag: 'hero-prayer',
+        child: Material(
+          color: Colors.transparent,
+          child: RefreshIndicator(
+            onRefresh: () async {
+              _loadPrayerTimes();
+            },
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                // Location info
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardBackground,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.border, width: 1),
                   ),
-                  const Spacer(),
-                  Text(
-                    DateFormat('EEEE, MMM d').format(DateTime.now()),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.location_on, color: AppColors.primaryBlue, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Lahore, Pakistan',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        DateFormat('EEEE, MMM d').format(DateTime.now()),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: AppColors.textTertiary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 24),
+                
+                // Next Prayer Card (Premium Highlight)
+                _buildNextPrayerCard(theme),
+                
+                const SizedBox(height: 32),
+                
+                // Section Title
+                Text(
+                  "Today's Schedule",
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                // All Prayer Times
+                _buildPrayerTimeCard('Fajr', Icons.wb_twilight, prayerTimes['fajr']!, AppColors.fajrColor),
+                const SizedBox(height: 12),
+                _buildPrayerTimeCard('Sunrise', Icons.wb_sunny_outlined, prayerTimes['sunrise']!, AppColors.textTertiary),
+                const SizedBox(height: 12),
+                _buildPrayerTimeCard('Dhuhr', Icons.wb_sunny, prayerTimes['dhuhr']!, AppColors.dhuhrColor),
+                const SizedBox(height: 12),
+                _buildPrayerTimeCard('Asr', Icons.cloud_outlined, prayerTimes['asr']!, AppColors.asrColor),
+                const SizedBox(height: 12),
+                _buildPrayerTimeCard('Maghrib', Icons.nights_stay_outlined, prayerTimes['maghrib']!, AppColors.maghribColor),
+                const SizedBox(height: 12),
+                _buildPrayerTimeCard('Isha', Icons.nights_stay, prayerTimes['isha']!, AppColors.ishaColor),
+                
+                const SizedBox(height: 32),
+                
+                // Calculation method info
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceBackground,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    'Calculation: University of Islamic Sciences, Karachi • School: Hanafi',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: AppColors.textTertiary,
                     ),
+                    textAlign: TextAlign.center,
                   ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 24),
-            
-            // Next Prayer Card (Premium Highlight)
-            _buildNextPrayerCard(theme),
-            
-            const SizedBox(height: 32),
-            
-            // Section Title
-            Text(
-              "Today's Schedule",
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            // All Prayer Times
-            _buildPrayerTimeCard('Fajr', Icons.wb_twilight, prayerTimes['fajr']!, AppColors.fajrColor),
-            const SizedBox(height: 12),
-            _buildPrayerTimeCard('Sunrise', Icons.wb_sunny_outlined, prayerTimes['sunrise']!, AppColors.textTertiary),
-            const SizedBox(height: 12),
-            _buildPrayerTimeCard('Dhuhr', Icons.wb_sunny, prayerTimes['dhuhr']!, AppColors.dhuhrColor),
-            const SizedBox(height: 12),
-            _buildPrayerTimeCard('Asr', Icons.cloud_outlined, prayerTimes['asr']!, AppColors.asrColor),
-            const SizedBox(height: 12),
-            _buildPrayerTimeCard('Maghrib', Icons.nights_stay_outlined, prayerTimes['maghrib']!, AppColors.maghribColor),
-            const SizedBox(height: 12),
-            _buildPrayerTimeCard('Isha', Icons.nights_stay, prayerTimes['isha']!, AppColors.ishaColor),
-            
-            const SizedBox(height: 32),
-            
-            // Calculation method info
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceBackground,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                'Calculation: University of Islamic Sciences, Karachi • School: Hanafi',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: AppColors.textTertiary,
                 ),
-                textAlign: TextAlign.center,
-              ),
+                const SizedBox(height: 40),
+              ],
             ),
-            const SizedBox(height: 40),
-          ],
+          ),
         ),
       ),
     );

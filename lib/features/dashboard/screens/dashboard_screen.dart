@@ -9,6 +9,7 @@ import 'package:faze/core/widgets/dashboard_journal_widget.dart';
 import 'package:faze/core/widgets/dashboard_exercise_widget.dart';
 import 'package:faze/core/widgets/quick_stats_row.dart';
 import 'package:faze/features/dashboard/providers/dashboard_providers.dart';
+import 'package:faze/core/widgets/blob_painter.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -17,7 +18,24 @@ class DashboardScreen extends ConsumerStatefulWidget {
   ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+class _DashboardScreenState extends ConsumerState<DashboardScreen> with TickerProviderStateMixin {
+  late AnimationController _blobController;
+
+  @override
+  void initState() {
+    super.initState();
+    _blobController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 20),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _blobController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -114,60 +132,76 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   Widget _buildBody(ThemeData theme, DashboardData data) {
-
     return Stack(
       children: [
-        // Background glows
-        Positioned(
-          top: -100,
-          right: -50,
-          child: Container(
-            width: 300,
-            height: 300,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  AppColors.primaryBlue.withOpacity(0.08),
-                  Colors.transparent,
-                ],
-              ),
-            ),
-          ),
-        ),
-        Positioned(
-          top: 200,
-          left: -100,
-          child: Container(
-            width: 400,
-            height: 400,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  AppColors.primaryBlue.withOpacity(0.06),
-                  Colors.transparent,
-                ],
-              ),
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: 100,
-          right: -150,
-          child: Container(
-            width: 500,
-            height: 500,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  AppColors.deepBlue.withOpacity(0.05),
-                  Colors.transparent,
-                ],
-              ),
-            ),
-          ),
+        // Background Animating Blobs
+        AnimatedBuilder(
+          animation: _blobController,
+          builder: (context, child) {
+            return Stack(
+              children: [
+                // Top Right Blob
+                Positioned(
+                  top: -100,
+                  right: -50,
+                  child: CustomPaint(
+                    painter: BlobPainter(
+                      color: AppColors.primaryBlue.withOpacity(0.12),
+                      animationValue: _blobController.value,
+                    ),
+                    size: const Size(400, 400),
+                  ),
+                ),
+                // Middle Left Blob
+                Positioned(
+                  top: 300,
+                  left: -150,
+                  child: CustomPaint(
+                    painter: BlobPainter(
+                      color: AppColors.primaryBlue.withOpacity(0.08),
+                      animationValue: _blobController.value + 0.5,
+                    ),
+                    size: const Size(500, 500),
+                  ),
+                ),
+                // Bottom Right Blob
+                Positioned(
+                  bottom: -150,
+                  right: -100,
+                  child: CustomPaint(
+                    painter: BlobPainter(
+                      color: AppColors.deepBlue.withOpacity(0.06),
+                      animationValue: _blobController.value + 0.2,
+                    ),
+                    size: const Size(600, 600),
+                  ),
+                ),
+                // Floating illustrations
+                Positioned(
+                  top: 150,
+                  right: 40,
+                  child: CustomPaint(
+                    painter: FloatingIllustrationPainter(
+                      color: Colors.white.withOpacity(0.15),
+                      animationValue: _blobController.value,
+                    ),
+                    size: const Size(30, 30),
+                  ),
+                ),
+                Positioned(
+                  bottom: 250,
+                  left: 80,
+                  child: CustomPaint(
+                    painter: FloatingIllustrationPainter(
+                      color: Colors.white.withOpacity(0.1),
+                      animationValue: _blobController.value + 0.3,
+                    ),
+                    size: const Size(20, 20),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
 
         SingleChildScrollView(
@@ -209,19 +243,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          greeting,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: AppColors.textSecondary,
-            fontSize: 16,
+          greeting.toUpperCase(),
+          style: theme.textTheme.labelMedium?.copyWith(
+            color: AppColors.primaryBlue,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.5,
           ),
         ),
         const SizedBox(height: 8),
         Text(
-          'Ready to make progress?',
-          style: theme.textTheme.headlineMedium?.copyWith(
-            color: AppColors.textPrimary,
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
+          'Forge your path today.',
+          style: theme.textTheme.displayMedium?.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+            height: 1.1,
           ),
         ),
       ],
