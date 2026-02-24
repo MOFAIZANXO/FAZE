@@ -1,13 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
-import '../../../data/services/database_service.dart';
-import '../../../data/models/hydration_log.dart';  // ✅ CORRECT PATH (3 levels up, not 4)
+import 'package:faze/data/services/database_service.dart';
+import 'package:faze/data/models/hydration_log.dart';
 
 /// AquaFlow Hydration Service
 /// 
 /// Uses your existing HydrationLog model (timestamp + amountMl)
 class HydrationService {
-  static Isar get _db => DatabaseService.instance;
+  static Future<Isar> _getDb() => DatabaseService.getIsar();
 
   // ─────────────────────────────────────────────
   // READ
@@ -24,8 +24,9 @@ class HydrationService {
   static Future<List<HydrationLog>> getTodayLogs() async {
     final start = _startOfDay(DateTime.now());
     final end = _endOfDay(DateTime.now());
+    final db = await _getDb();
 
-    return await _db.hydrationLogs
+    return await db.hydrationLogs
         .filter()
         .timestampBetween(start, end)
         .sortByTimestampDesc()
@@ -37,19 +38,33 @@ class HydrationService {
     final start = _startOfDay(
       DateTime.now().subtract(Duration(days: days - 1)),
     );
-    return await _db.hydrationLogs
+    final db = await _getDb();
+    return await db.hydrationLogs
         .filter()
         .timestampGreaterThan(start, include: true)
         .sortByTimestampDesc()
         .findAll();
   }
 
+  /// Reset all progress for today
+  static Future<void> resetTodayProgress() async {
+    final todayLogs = await getTodayLogs();
+    final db = await _getDb();
+    
+    await db.writeTxn(() async {
+      for (final log in todayLogs) {
+        await db.hydrationLogs.delete(log.id);
+      }
+    });
+  }
+
   /// Stream today's logs (auto-updates UI)
-  static Stream<List<HydrationLog>> watchTodayLogs() {
+  static Stream<List<HydrationLog>> watchTodayLogs() async* {
     final start = _startOfDay(DateTime.now());
     final end = _endOfDay(DateTime.now());
+    final db = await _getDb();
 
-    return _db.hydrationLogs
+    yield* db.hydrationLogs
         .filter()
         .timestampBetween(start, end)
         .watch(fireImmediately: true);
@@ -65,8 +80,9 @@ class HydrationService {
       ..timestamp = DateTime.now()
       ..amountMl = 250;
 
-    await _db.writeTxn(() async {
-      await _db.hydrationLogs.put(log);
+    final db = await _getDb();
+    await db.writeTxn(() async {
+      await db.hydrationLogs.put(log);
     });
   }
 
@@ -80,9 +96,10 @@ class HydrationService {
       }
 
       final lastLog = logs.first;
+      final db = await _getDb();
       
-      await _db.writeTxn(() async {
-        final success = await _db.hydrationLogs.delete(lastLog.id);
+      await db.writeTxn(() async {
+        final success = await db.hydrationLogs.delete(lastLog.id);
         if (success) {
           debugPrint('HydrationService: Deleted log ${lastLog.id}');
         } else {
@@ -98,9 +115,11 @@ class HydrationService {
   static Future<void> setGlassesForToday(int glasses) async {
     // Clear today's logs
     final todayLogs = await getTodayLogs();
-    await _db.writeTxn(() async {
+    final db = await _getDb();
+    
+    await db.writeTxn(() async {
       for (final log in todayLogs) {
-        await _db.hydrationLogs.delete(log.id);
+        await db.hydrationLogs.delete(log.id);
       }
     });
 
@@ -113,8 +132,8 @@ class HydrationService {
         ..amountMl = 250,
     );
 
-    await _db.writeTxn(() async {
-      await _db.hydrationLogs.putAll(logs);
+    await db.writeTxn(() async {
+      await db.hydrationLogs.putAll(logs);
     });
   }
 

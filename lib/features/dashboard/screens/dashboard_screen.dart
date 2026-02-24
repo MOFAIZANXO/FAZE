@@ -1,123 +1,119 @@
 import 'package:flutter/material.dart';
-import '../../../core/contracts/widget_contracts.dart';
-import '../services/dashboard_service.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/dashboard_prayer_widget.dart';
-import '../../../core/widgets/dashboard_hydration_widget.dart';
-import '../../../core/widgets/dashboard_tasks_widget.dart';
-import '../../../core/widgets/dashboard_journal_widget.dart';
-import '../../../core/widgets/dashboard_exercise_widget.dart';
-import '../../../core/widgets/quick_stats_row.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:faze/core/contracts/widget_contracts.dart';
+import 'package:faze/core/theme/app_theme.dart';
+import 'package:faze/core/widgets/dashboard_prayer_widget.dart';
+import 'package:faze/core/widgets/dashboard_hydration_widget.dart';
+import 'package:faze/core/widgets/dashboard_tasks_widget.dart';
+import 'package:faze/core/widgets/dashboard_journal_widget.dart';
+import 'package:faze/core/widgets/dashboard_exercise_widget.dart';
+import 'package:faze/core/widgets/quick_stats_row.dart';
+import 'package:faze/features/dashboard/providers/dashboard_providers.dart';
 
-class DashboardScreen extends StatefulWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
-  DashboardData? _data;
-  bool _isLoading = true;
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadData();
-  }
-
-  Future<void> _loadData() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    try {
-      final data = await DashboardService.getDashboardData();
-      setState(() {
-        _data = data;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
-      print('Dashboard load error: $e');
-    }
-  }
-
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final dashboardAsync = ref.watch(dashboardDataProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        title: const Text(
-          'FAZE',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 26,
-            fontWeight: FontWeight.bold,
-          ),
+        title: Image.asset(
+          'assets/images/Logo.png',
+          height: 32,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return const Text(
+              'FAZE',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+              ),
+            );
+          },
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.white),
-            onPressed: _loadData,
+            onPressed: () => ref.invalidate(dashboardDataProvider),
           ),
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: _loadData,
-        child: _buildBody(theme),
+        onRefresh: () async => ref.invalidate(dashboardDataProvider),
+        child: dashboardAsync.when(
+          data: (data) => _buildBody(theme, data),
+          loading: () {
+            // If we have previous data, keep showing it while loading (e.g. during a button tap)
+            if (dashboardAsync.hasValue) {
+              return _buildBody(theme, dashboardAsync.value!);
+            }
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/images/Logo.png',
+                    width: 120,
+                    opacity: const AlwaysStoppedAnimation(0.5),
+                  ),
+                  const SizedBox(height: 24),
+                  const CircularProgressIndicator(color: Colors.blue),
+                ],
+              ),
+            );
+          },
+          error: (err, stack) {
+            // Even on error, if we have data, show it but maybe with a snackbar or small indicator
+            if (dashboardAsync.hasValue) {
+              return _buildBody(theme, dashboardAsync.value!);
+            }
+            return _buildError(err);
+          },
+        ),
       ),
     );
   }
 
-  Widget _buildBody(ThemeData theme) {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: Colors.blue),
-      );
-    }
+  Widget _buildError(Object err) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, color: Colors.red, size: 48),
+          const SizedBox(height: 16),
+          const Text(
+            'Failed to load dashboard',
+            style: TextStyle(color: Colors.white, fontSize: 18),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            err.toString(),
+            style: const TextStyle(color: Colors.white54, fontSize: 12),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () => ref.invalidate(dashboardDataProvider),
+            child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
 
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, color: Colors.red, size: 48),
-            const SizedBox(height: 16),
-            Text(
-              'Failed to load dashboard',
-              style: const TextStyle(color: Colors.white, fontSize: 18),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _error!,
-              style: const TextStyle(color: Colors.white54, fontSize: 12),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _loadData,
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (_data == null) {
-      return const Center(
-        child: Text('No data', style: TextStyle(color: Colors.white)),
-      );
-    }
+  Widget _buildBody(ThemeData theme, DashboardData data) {
 
     return Stack(
       children: [
@@ -182,7 +178,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               _buildGreeting(theme),
               const SizedBox(height: 32),
-              QuickStatsRow(data: _data!),
+              QuickStatsRow(data: data),
               const SizedBox(height: 32),
               Text(
                 "Today's Overview",
@@ -193,7 +189,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              _buildOverviewGrid(),
+              _buildOverviewGrid(data),
             ],
           ),
         ),
@@ -232,7 +228,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildOverviewGrid() {
+  Widget _buildOverviewGrid(DashboardData data) {
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth > 600) {
@@ -244,25 +240,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
             mainAxisSpacing: 16,
             childAspectRatio: 1.5,
             children: [
-              DashboardPrayerWidgetCard(data: _data!.prayer),
-              DashboardHydrationWidgetCard(data: _data!.hydration),
-              DashboardTasksWidgetCard(data: _data!.tasks),
-              DashboardJournalWidgetCard(data: _data!.journal),
-              DashboardExerciseWidgetCard(data: _data!.exercise),
+              DashboardPrayerWidgetCard(data: data.prayer),
+              DashboardHydrationWidgetCard(data: data.hydration),
+              DashboardTasksWidgetCard(data: data.tasks),
+              DashboardJournalWidgetCard(data: data.journal),
+              DashboardExerciseWidgetCard(data: data.exercise),
             ],
           );
         } else {
           return Column(
             children: [
-              DashboardPrayerWidgetCard(data: _data!.prayer),
+              DashboardPrayerWidgetCard(data: data.prayer),
               const SizedBox(height: 16),
-              DashboardHydrationWidgetCard(data: _data!.hydration),
+              DashboardHydrationWidgetCard(data: data.hydration),
               const SizedBox(height: 16),
-              DashboardTasksWidgetCard(data: _data!.tasks),
+              DashboardTasksWidgetCard(data: data.tasks),
               const SizedBox(height: 16),
-              DashboardJournalWidgetCard(data: _data!.journal),
+              DashboardJournalWidgetCard(data: data.journal),
               const SizedBox(height: 16),
-              DashboardExerciseWidgetCard(data: _data!.exercise),
+              DashboardExerciseWidgetCard(data: data.exercise),
             ],
           );
         }

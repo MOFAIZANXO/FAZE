@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../features/dashboard/screens/dashboard_screen.dart';
-import '../../features/daily/screens/daily_rituals_screen.dart';
-import '../../features/productivity/screens/productivity_screen.dart';
-import '../../features/hydration/screens/hydration_screen.dart';
-import '../../features/journal/screens/journal_screen.dart';
-import '../../features/analytics/screens/analytics_screen.dart';
-import '../../features/prayers/screens/prayer_times_screen.dart';
-import '../widgets/app_bottom_nav.dart';
+import 'package:faze/features/dashboard/screens/dashboard_screen.dart';
+import 'package:faze/features/daily/screens/daily_rituals_screen.dart';
+import 'package:faze/features/productivity/screens/productivity_screen.dart';
+import 'package:faze/features/hydration/screens/hydration_screen.dart';
+import 'package:faze/features/journal/screens/journal_screen.dart';
+import 'package:faze/features/analytics/screens/analytics_screen.dart';
+import 'package:faze/features/prayers/screens/prayer_times_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:faze/features/hydration/providers/hydration_providers.dart';
+import 'package:faze/core/widgets/app_bottom_nav.dart';
 
 /// Main app router with StatefulShellRoute for bottom navigation
 /// 
@@ -109,7 +111,7 @@ class AppRouter {
 }
 
 /// Scaffold with Bottom Navigation
-class ScaffoldWithBottomNav extends StatelessWidget {
+class ScaffoldWithBottomNav extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
 
   const ScaffoldWithBottomNav({
@@ -118,14 +120,43 @@ class ScaffoldWithBottomNav extends StatelessWidget {
   });
 
   @override
+  ConsumerState<ScaffoldWithBottomNav> createState() => _ScaffoldWithBottomNavState();
+}
+
+class _ScaffoldWithBottomNavState extends ConsumerState<ScaffoldWithBottomNav> {
+  late DateTime _lastCheckedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _lastCheckedDate = DateTime.now();
+    _startMidnightTimer();
+  }
+
+  void _startMidnightTimer() {
+    // Check every minute if the date has changed
+    Future.delayed(const Duration(minutes: 1), () {
+      if (!mounted) return;
+
+      final now = DateTime.now();
+      if (now.day != _lastCheckedDate.day) {
+        // Day changed! Trigger reset for any daily logic
+        ref.read(currentDayProvider.notifier).state = now;
+        _lastCheckedDate = now;
+      }
+      _startMidnightTimer();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: navigationShell,
+      body: widget.navigationShell,
       bottomNavigationBar: AppBottomNav(
-        currentIndex: navigationShell.currentIndex,
-        onTap: (index) => navigationShell.goBranch(
+        currentIndex: widget.navigationShell.currentIndex,
+        onTap: (index) => widget.navigationShell.goBranch(
           index,
-          initialLocation: index == navigationShell.currentIndex,
+          initialLocation: index == widget.navigationShell.currentIndex,
         ),
       ),
     );

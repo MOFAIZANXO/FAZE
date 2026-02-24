@@ -1,6 +1,6 @@
-import '../../../core/contracts/widget_contracts.dart';
-import '../../../data/services/prayer_time_service.dart';
-import '../../../features/hydration/services/hydration_service.dart';
+import 'package:faze/core/contracts/widget_contracts.dart';
+import 'package:faze/data/services/prayer_time_service.dart';
+import 'package:faze/features/hydration/services/hydration_service.dart';
 
 /// Dashboard Service
 /// 
@@ -9,10 +9,10 @@ import '../../../features/hydration/services/hydration_service.dart';
 class DashboardService {
   
   /// Get complete dashboard data
-  static Future<DashboardData> getDashboardData() async {
+  static Future<DashboardData> getDashboardData({int targetGlasses = 8}) async {
     return DashboardData(
       prayer: _getPrayerWidgetData(),
-      hydration: await _getHydrationWidgetData(),  // ✅ Now async
+      hydration: await _getHydrationWidgetData(targetGlasses: targetGlasses),
       tasks: _getTasksWidgetData(),
       journal: _getJournalWidgetData(),
       exercise: _getExerciseWidgetData(),
@@ -41,9 +41,9 @@ class DashboardService {
   }
   
   /// Hydration widget data (NOW USES REAL DATA)
-  static Future<DashboardHydrationWidget> _getHydrationWidgetData() async {
+  static Future<DashboardHydrationWidget> _getHydrationWidgetData({int targetGlasses = 8}) async {
     try {
-      final summary = await HydrationService.getSummary(targetGlasses: 8);
+      final summary = await HydrationService.getSummary(targetGlasses: targetGlasses);
       
       return DashboardHydrationWidget(
         currentGlasses: summary.currentGlasses,
@@ -54,9 +54,9 @@ class DashboardService {
     } catch (e) {
       // Fallback if hydration service fails
       print('Hydration service error: $e');
-      return const DashboardHydrationWidget(
+      return DashboardHydrationWidget(
         currentGlasses: 0,
-        targetGlasses: 8,
+        targetGlasses: targetGlasses,
         percentComplete: 0,
         lastDrinkTime: null,
       );

@@ -71,35 +71,46 @@ class _DashboardPrayerWidgetCardState extends State<DashboardPrayerWidgetCard>
           child: Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppColors.cardBackground,
+              gradient: LinearGradient(
+                colors: [AppColors.primaryBlue, AppColors.deepBlue],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border, width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryBlue.withOpacity(0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.mosque, color: AppColors.primaryBlue, size: 20),
+                    const Icon(Icons.mosque, color: Colors.white, size: 20),
                     const SizedBox(width: 8),
                     Text(
-                      'Next Prayer',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w500,
+                      'NEXT PRAYER',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: Colors.white.withOpacity(0.8),
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.0,
                           ),
                     ),
                     const Spacer(),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryBlue.withOpacity(0.1),
+                        color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         'ACTIVE',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: AppColors.primaryBlue,
+                              color: Colors.white,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.5,
                             ),
@@ -116,7 +127,7 @@ class _DashboardPrayerWidgetCardState extends State<DashboardPrayerWidgetCard>
                     Text(
                       widget.data.nextPrayerName.toUpperCase(),
                       style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                            color: AppColors.textPrimary,
+                            color: Colors.white,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.2,
                           ),
@@ -124,7 +135,7 @@ class _DashboardPrayerWidgetCardState extends State<DashboardPrayerWidgetCard>
                     Text(
                       _formatTime(widget.data.nextPrayerTime),
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: AppColors.primaryBlue,
+                            color: Colors.white.withOpacity(0.9),
                             fontWeight: FontWeight.w600,
                           ),
                     ),
@@ -136,7 +147,7 @@ class _DashboardPrayerWidgetCardState extends State<DashboardPrayerWidgetCard>
                     Text(
                       'in ${widget.data.timeRemaining}',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.textSecondary,
+                            color: Colors.white.withOpacity(0.8),
                           ),
                     ),
                     const SizedBox(width: 12),
@@ -145,8 +156,8 @@ class _DashboardPrayerWidgetCardState extends State<DashboardPrayerWidgetCard>
                         borderRadius: BorderRadius.circular(4),
                         child: LinearProgressIndicator(
                           value: _calculateProgress(),
-                          backgroundColor: AppColors.border,
-                          valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+                          backgroundColor: Colors.white.withOpacity(0.1),
+                          valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                           minHeight: 4,
                         ),
                       ),
